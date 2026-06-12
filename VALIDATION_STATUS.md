@@ -14,11 +14,11 @@ used for any A1/A2/A3 gate evaluation. See `docs/validation/G1_DATA_READINESS.md
 
 ## Alpha Verdicts
 
-| Alpha | Status      | Trades (n) | Net PF | Verdict | Notes |
-|-------|------------|------------|--------|---------|-------|
-| A1    | NOT TESTED | —          | —      | PENDING | SMC-filter + momentum/delta |
-| A2    | NOT TESTED | —          | —      | PENDING | Master-trader copy (SignalStart, 4,437 trades) |
-| A3    | NOT TESTED | —          | —      | PENDING | Ensemble (A1×0.4 + regime×0.3 + A2×0.3 > 0.75) |
+| Alpha | Status  | Trades (n) | Net PF | Verdict | Notes |
+|-------|---------|------------|--------|---------|-------|
+| A1    | NOT TESTED | —       | —      | PENDING | SMC-filter + momentum/delta |
+| A2    | TESTED  | 325 (OOS)  | 3.745  | **READ (OPTIMISTIC)** | Master-trader copy; DSR fails (z=−25.32); 10/11 pass. See `docs/validation/A2_GATE_RESULT.md` |
+| A3    | NOT TESTED | —       | —      | PENDING | Ensemble (A1×0.4 + regime×0.3 + A2×0.3 > 0.75) |
 
 ## Gate Thresholds (pre-registered, immutable)
 
