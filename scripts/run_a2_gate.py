@@ -83,8 +83,8 @@ def run(db_path: Path) -> None:
     else:
         print("All checks passed.")
 
-    print(f"\nSURVIVORSHIP NOTE: verdict is OPTIMISTIC (recently-delisted visible; "
-          f"historically-delisted absent). See A2_MASTER_TRADER_DECISION.md §0.")
+    print("\nSURVIVORSHIP NOTE: verdict is OPTIMISTIC (recently-delisted visible; "
+          "historically-delisted absent). See A2_MASTER_TRADER_DECISION.md §0.")
 
 
 def main() -> None:

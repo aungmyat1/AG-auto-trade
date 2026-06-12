@@ -26,6 +26,12 @@ class RejectionReason:
     RISK_COOLDOWN = "risk_cooldown"
     RISK_SIZE = "risk_size_cap"
     RISK_CONCURRENT = "risk_concurrent_positions"
+    # Phase B MVP filter rejections
+    NO_SWEEP = "no_sweep"
+    NO_CHOCH = "no_choch"
+    NO_OB_UNMITIGATED = "no_ob_unmitigated"
+    NO_FVG = "no_fvg"
+    NO_DISPLACEMENT = "no_displacement"
 
 
 @dataclass

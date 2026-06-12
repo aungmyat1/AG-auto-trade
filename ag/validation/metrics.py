@@ -85,3 +85,63 @@ class BacktestResult:
             if dd > max_dd:
                 max_dd = dd
         return max_dd
+
+    # ------------------------------------------------------------------
+    # Informational properties — not gate criteria (gate thresholds are
+    # locked in GATE_DECISION.md and cannot be changed without a new
+    # lock-before-look commit).  These feed future Gate v2 analysis only.
+    # ------------------------------------------------------------------
+
+    @property
+    def calmar_ratio(self) -> float:
+        """CAGR / max_drawdown. Returns 0.0 if max_drawdown is 0."""
+        md = self.max_drawdown
+        if md == 0.0:
+            return 0.0
+        risk = 0.005
+        equity = 1.0
+        for r in self.trades_r:
+            equity *= (1.0 + r * risk)
+        years = self.n / 252.0
+        if years <= 0:
+            return 0.0
+        cagr = equity ** (1.0 / years) - 1.0
+        return cagr / md
+
+    @property
+    def recovery_factor(self) -> float:
+        """Net profit / max_drawdown. Returns 0.0 if max_drawdown is 0."""
+        md = self.max_drawdown
+        if md == 0.0:
+            return 0.0
+        risk = 0.005
+        equity = 1.0
+        for r in self.trades_r:
+            equity *= (1.0 + r * risk)
+        return (equity - 1.0) / md
+
+    @property
+    def max_consecutive_losses(self) -> int:
+        """Longest streak of consecutive losing trades."""
+        max_streak = current = 0
+        for t in self.trades_r:
+            if t < 0:
+                current += 1
+                max_streak = max(max_streak, current)
+            else:
+                current = 0
+        return max_streak
+
+    @property
+    def time_in_drawdown_pct(self) -> float:
+        """Fraction of trades where equity is below its prior peak."""
+        risk = 0.005
+        equity = peak = 1.0
+        count = 0
+        for r in self.trades_r:
+            equity *= (1.0 + r * risk)
+            if equity < peak:
+                count += 1
+            else:
+                peak = equity
+        return count / self.n
