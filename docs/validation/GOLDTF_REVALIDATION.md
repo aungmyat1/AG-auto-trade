@@ -36,10 +36,17 @@ Source: `docs/validation/gtf_v2_backtest_result.json` (old auto-trade-system)
 Context:
 - Engine: `scripts/run_gtf_v2_backtest.py` with intrabar SL/TP exits (honest)
 - Period: 2025-01-02 → 2026-05-27 (OOS window, 17 months)
-- Data: same synthetic + Bybit splice
-- n = 65 OOS trades
+- Data: synthetic Yahoo Finance GC=F (~85%) + Bybit perp native splice (~15%), 11,975 bars total
+- n = **47 OOS trades** (per gtf_v2_backtest_result.json `total_trades: 47`)
 - PF 1.017, Sharpe 0.235, WR 34.0%, max DD 8.41%, return −5.93%, commission drag 23.3%
 - Gate failures (old system): profit_factor 1.017 < 1.2, sharpe 0.24 < 0.5
+
+**Note on n=47 vs n=65:** A separate run of `run_initial_backtest.py --full` over the same
+OOS period produced n=65 trades, PF 1.45, Sharpe 2.48 (old Phase-0 engine, EOD exits).
+The v2 regime-aware run (run_gtf_v2_backtest.py) produced n=47 because 682 bars were blocked
+by the stricter ATR filter and the intrabar exit logic. n=47 from the honest engine is the
+correct figure for the intrabar-exit verdict. Both datasets are the synthetic+Bybit splice,
+not 65 days of Bybit-only data.
 
 **Explanation of the discrepancy:** The DB engine ran IS on the full period without intrabar exits
 (EOD price assumption) and without the commission drag that honest intrabar SL/TP incurs.
@@ -55,7 +62,7 @@ Evaluated on: OOS run, honest intrabar exits, net of fees (gtf_v2_backtest_resul
 
 | Check | Value | Threshold | Pass? |
 |---|---|---|---|
-| n (OOS trades) | 65 | ≥ 200 (ROBUST) / ≥ 50 (FLOOR) | READ-FLOOR only (n≥50 passes floor, not ROBUST) |
+| n (OOS trades) | 47 (honest intrabar) / 65 (EOD engine) | ≥ 200 (ROBUST) / ≥ 50 (FLOOR) | **FAIL floor** (n=47 < 50 on honest run; EOD n=65 barely passes floor but uses wrong exit model) |
 | Net PF | 1.017 | > 1.25 (ROBUST) | **FAIL** |
 | Win rate | 34.0% | > 45% | **FAIL** |
 | Sharpe ratio | 0.235 | > 1.2 | **FAIL** |
@@ -74,11 +81,18 @@ PF below 1.0.
 below the 60% threshold). The earlier quick 3-fold WFO showed 3/3 profitable but only 8 parameter
 combos tested — insufficient coverage. The 13-window run with proper grid is the definitive result.
 
-**GATE VERDICT: FRAGILE — 5 of 9 ROBUST dimensions fail.**
+**GATE VERDICT: FRAGILE — n=47 fails even the READ floor (< 50); PF, WR, Sharpe, WF-fold rate all fail ROBUST.**
 
-The GTF strategy does not survive the strict gate. The IS figure (PF 2.441) is an artifact of
-in-sample evaluation on synthetic proxy data without intrabar exits. The correct OOS honest number
-is PF 1.017, which is marginally above 1.0 (passes READ floor) but well below ROBUST (1.25).
+The FRAGILE verdict rests on CONVERGENT evidence, not a single thin number:
+- IS/OOS collapse (PF 2.441 IS → 1.017 OOS with intrabar exits)
+- n=47 on the honest engine is below the READ floor (50)
+- Commission drag 23.3% consumed the edge entirely
+- WFO 3/13 profitable windows (23% — well below 60%)
+- Demo never traded (0/100 phase-2 gate)
+
+The IS figure (PF 2.441) is an artifact of in-sample evaluation on synthetic proxy data without
+intrabar exits. Even the EOD-engine OOS result (PF 1.45, n=65) rests on 2-year synthetic Yahoo
+proxy data — not live CME futures. Either way, GTF is FRAGILE.
 
 ---
 

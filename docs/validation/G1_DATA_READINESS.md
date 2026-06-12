@@ -132,3 +132,18 @@ recommended path. **Requires owner go-ahead and subscription — see Dispatch 3 
 2. Delta / order-flow series if delta-imbalance trigger is to be tested (optional — can exclude and mark NOT-TESTED)
 3. `ag/validation/` used as the engine (not old innovative_backtest_engine.py)
 4. Trial-count-aware DSR explicitly included in gate call (`n_trials` from §2 of FILTERED_SMC_DECISION.md)
+
+---
+
+## 5. Databento Decision (recorded 2026-06-12)
+
+**HOLD: do not purchase Databento.**
+
+A2 (local SignalStart / master-trader copy data) is the next build. A2 requires no
+Databento or CME data — it runs entirely on the trade-history already on disk.
+
+Revisit Databento only when committing to futures-first across A1/A2/A3, or after
+A2 clears its gate. Until that decision is made, the futures instrument path (GC/MGC + 6E)
+remains parked. T4/delta = out of scope for now.
+
+The `ag/data/databento/__init__.py` stub remains as a placeholder only.
