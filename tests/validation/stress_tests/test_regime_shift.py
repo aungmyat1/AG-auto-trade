@@ -8,7 +8,7 @@ from __future__ import annotations
 from ag.validation.gate import ValidationGate
 from ag.validation.metrics import BacktestResult
 from ag.validation.cost_model import CostModel
-from tests.validation.stress_tests.synthetic import (
+from .synthetic import (
     choppy_ranging,
     trend_with_pullbacks,
 )
