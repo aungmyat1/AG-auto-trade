@@ -29,8 +29,8 @@ Last updated: 2026-06-12
 
 | Gap | Action |
 |---|---|
-| Branch protection OFF on `main` | Owner: enable in GitHub UI (plan Phase 5 hygiene) |
-| No CI | Owner: add workflow via GitHub UI (OAuth token lacked `workflow` scope) |
+| ~~Branch protection OFF on `main`~~ | ✅ Closed 2026-06-12 — owner enabled protection (require PR + checks, no force push) |
+| ~~No CI~~ | ✅ Closed 2026-06-12 — `.github/workflows/ci.yml` on main; first run red until the build-backend fix (PR #1 or PR #2) merges |
 | Lock-before-look loader missing | Gate thresholds hardcoded in `gate.py`/`config.py`; no code reads GATE_DECISION.md. Build with alphas. |
 | Risk engine + regime classifier have zero tests | Write before alphas depend on them |
 | research_archive half-seeded | M15 fee-trap, ALiVMassit, dual-mode scalper rows lack record files |
