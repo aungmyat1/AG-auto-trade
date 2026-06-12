@@ -23,7 +23,12 @@ Last updated: 2026-06-12
 ## Last Validation Evidence
 
 - 2026-06-12: full test suite 21/21 green (cost model, deflated Sharpe, gate)
-- No alpha has ever been gate-raced in this repo
+- 2026-06-12 (PM): PR #3 (`dispatch-3-a1-spec-phase6`) independently verified — 209/209 tests
+  green + ruff clean at its head; it records **A2 = READ (OPTIMISTIC)** (10/11 pass, DSR fails
+  z=−25.32) and the A1 spec lock. Its merge is blocked only by a CI import-path issue
+  (missing `tests/__init__.py`) — diagnosis posted on PR #3. Its PROJECT_STATE/VALIDATION_STATUS
+  versions supersede this file's alpha rows once merged.
+- No alpha has been gate-raced **on main** yet
 
 ## Known Gaps (carry-over from 2026-06-12 status review)
 

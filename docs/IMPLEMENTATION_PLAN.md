@@ -29,6 +29,19 @@ infrastructure. Risk engine + regime classifier implemented but untested. **New 
 (2026-06-12): G5 leverage guard in `RiskEngine.validate_entry()` is a no-op** — documented
 as one of six non-bypassable guards but enforces nothing (`ag/risk/engine.py:121`).
 
+**Update (2026-06-12 PM):** PR #3 (`dispatch-3-a1-spec-phase6`; independently verified —
+209/209 tests + ruff clean at its head) overtakes parts of this plan before merging:
+
+- **Phase A largely delivered there:** risk-engine tests (29) + regime-classifier tests (16).
+  G5 is still a no-op — that branch *pins* the gap (`test_validate_entry_does_not_check_leverage`)
+  rather than closing it, so item A2 stands. Item A4 (lock-before-look consistency test) still open.
+- **Phase C well underway there:** A1 detectors (OB/FVG/liquidity/BOS-ChoCH/displacement) +
+  pipeline + `A1SmcMomentum` wrapper + signal-audit tracker built; A2 built **and gated —
+  verdict READ (OPTIMISTIC)**: 10/11 checks pass, DSR z = −25.32 → not ROBUST, usable only as
+  the A3 ensemble input. A1 spec locked, BLOCKED pending Databento data.
+- **Critical path after #3 merges is Phase B (Databento data layer)**; this plan needs a
+  reconciliation pass at that point (this section is the diff to apply).
+
 ## 3. Phases
 
 ### Phase A — Platform hardening (now; blocks everything else)
