@@ -80,6 +80,92 @@ owns serialisation if daily state must survive restarts.
 
 ---
 
+## Dynamic Risk Scaling (regime-aware, Phase 3+)
+
+From the uploaded design doc (RISK_MODEL_DESIGN.md v1.0). **Not yet implemented.**
+These are design-intent values; they conflict with some locked gate thresholds
+(see conflict table below). Any implementation must cap at G4 (0.5 %/trade).
+
+| Regime | Risk/trade intention | Notes |
+|---|---|---|
+| Strong trend + high confluence | ≤ 0.5 % (G4 hard cap) | Design doc said 1.0–1.5 % — NOT allowed |
+| Normal conditions | 0.5 % | Same as G4 default |
+| Ranging / low confluence | 0.33 % (0.67 × base) | Reduced; still below G4 |
+| After 2 consecutive losses | ≤ 0.25 % | Temporary de-risk during streak |
+
+---
+
+## Kelly Criterion (advisory, Phase 3+)
+
+From design doc. Not implemented; listed for future reference.
+
+- Use **Half-Kelly** by default (`f = (bp - q) / b × 0.5`)
+- Full Kelly only after 6+ months live with positive expectancy + low correlation
+- Kelly sizing output must still be capped at G4 (0.5 %/trade) before entry
+
+---
+
+## Correlation & Diversification (Phase 3+)
+
+From design doc. No implementation yet (`correlation_engine.py` is not built).
+
+- Max correlation between any two active strategies: **0.6**
+- If correlation > 0.6 for 20+ trading days → reduce risk on newer strategy by 30 %
+- Prefer strategies with negative or low cross-regime correlation
+
+---
+
+## Recovery Mode
+
+From design doc. Not yet implemented as a formal state machine.
+
+When portfolio drawdown exceeds 6 %:
+- Reduce all position sizes by 50 %
+- Disable new strategy entries
+- Only allow existing positions to run to stops/targets
+
+---
+
+## Planned modules (not yet built)
+
+```
+ag/risk/
+├── engine.py              ✅ production — 6-guard RiskEngine
+├── calculations.py        ✅ production — PnL / drawdown maths
+├── correlation_engine.py  ⬜ Phase 3 — cross-strategy correlation monitor
+├── kelly_calculator.py    ⬜ Phase 3 — Half-Kelly sizing (advisory)
+├── regime_risk_adjuster.py ⬜ Phase 3 — dynamic scale per regime
+```
+
+Build order: all three are Phase 3 (execution layer). Must not be built until
+a ROBUST alpha verdict exists. CLAUDE.md rule: "No duplicate subsystems."
+Add them only if they fill a gap not covered by `engine.py` + `RiskConfig`.
+
+---
+
+## Validation requirements (from design doc §7)
+
+Every alpha must demonstrate under the risk model before live trading:
+1. Survives 3× normal volatility shock without breaching G2 (15 % DD)
+2. Maintains positive expectancy after `CostModel.with_shock(spread_mult=1.5, slippage_mult=2.0)`
+3. Passes correlation stress test with any existing live strategies
+
+---
+
+## Threshold conflict table
+
+| Concept | Design doc v1.0 | Production locked | Source of truth |
+|---|---|---|---|
+| Max portfolio DD | 12 % | **15 %** | `GATE_DECISION.md` / G2 |
+| Max daily loss | 3 % | **2 %** | `RiskConfig.max_daily_loss_pct` / G1 |
+| Risk/trade base | 0.75 % | **0.5 %** | `RiskConfig.max_position_size_pct` / G4 |
+| Risk/trade max | 1.5 % | **0.5 %** | same — G4 is a hard cap, not a soft limit |
+
+Design doc v1.0 thresholds are **not authoritative**. They predate the locked gate.
+If the gate is ever revised (via a new `GATE_V2_DECISION.md`), update this table.
+
+---
+
 ## Skeletons that duplicate this engine (reference only)
 
 `docs/reference/skeletons/kill_switch_skeleton.py` — covers G1+G2 at different
@@ -89,4 +175,5 @@ thresholds (3 %/10 %). **Do not integrate.** Thresholds conflict with locked gat
 max_portfolio_dd=0.12 conflicts with G2 (0.15).
 
 `docs/reference/skeletons/position_sizing_skeleton.py` — covers G4 (0.5 %/trade).
-Already implemented. Use `RiskConfig.max_position_size_pct` instead.
+Includes regime-based scaling from design doc; thresholds corrected to 0.5 %.
+Use `RiskConfig.max_position_size_pct` and `RiskEngine.validate_entry()` in production.
