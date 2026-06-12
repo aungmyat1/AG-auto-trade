@@ -1,20 +1,17 @@
-"""A1 SMC-filter + momentum alpha module.
-
-Gate spec: ag/validation/lock_before_look/A1_SMC_MOMENTUM_DECISION.md
-Status: code build in progress; gate run BLOCKED pending Databento/CME data.
-"""
-from .detectors import (
+"""SMC detector library for A1 WHERE filter signals."""
+from .base import (
     OrderBlock,
     FairValueGap,
     LiquidityLevel,
     StructureBreak,
     Displacement,
-    OrderBlockDetector,
-    FairValueGapDetector,
-    BosChochDetector,
-    LiquidityDetector,
-    DisplacementDetector,
+    compute_atr,
 )
+from .order_block import OrderBlockDetector
+from .fvg import FairValueGapDetector
+from .bos_choch import BosChochDetector
+from .liquidity import LiquidityDetector
+from .displacement import DisplacementDetector
 
 __all__ = [
     "OrderBlock",
@@ -22,6 +19,7 @@ __all__ = [
     "LiquidityLevel",
     "StructureBreak",
     "Displacement",
+    "compute_atr",
     "OrderBlockDetector",
     "FairValueGapDetector",
     "BosChochDetector",

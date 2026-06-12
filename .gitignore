@@ -1,23 +1,76 @@
+# Secrets — never commit
 .env
 .env.*
 !.env.example
+
+# Python bytecode / compiled extensions
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+*.so
+
+# Build / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing / coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
-dist/
-build/
-*.egg-info/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Virtual environments
 .venv/
 venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data files (never commit large market data)
 data/raw/
 data/processed/
+data/signalstart/
+data/master_traders/
 *.parquet
 *.feather
 *.h5
 *.db
+*.sqlite3
+*.csv
+!tests/**/*.csv
+
+# Logs
 logs/
-data/signalstart/
-data/master_traders/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
