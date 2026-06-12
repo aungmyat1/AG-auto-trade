@@ -80,7 +80,11 @@ class RiskEngine:
     # Core check
     # ------------------------------------------------------------------
 
-    def validate_entry(self, position_size_pct: float = 0.005) -> RiskDecision:
+    def validate_entry(
+        self,
+        position_size_pct: float = 0.005,
+        leverage: float = 1.0,
+    ) -> RiskDecision:
         """Run all 6 guards in order. Returns approved=False on first violation."""
         violations: list[str] = []
         warnings: list[str] = []
@@ -118,10 +122,11 @@ class RiskEngine:
                 f"G4 size {position_size_pct:.2%} > cap {self.config.max_position_size_pct:.2%}"
             )
 
-        # G5: Leverage — advisory check (actual leverage determined at execution)
-        # Callers may pass leverage separately; here we flag if exposure exceeds limit
-        # (position_size_pct * leverage <= max_leverage * position_size_pct — always pass)
-        # G5 is enforced at execution layer
+        # G5: Leverage
+        if leverage > self.config.max_leverage:
+            violations.append(
+                f"G5 leverage {leverage:.1f}x > max {self.config.max_leverage}x"
+            )
 
         # G6: Concurrent positions
         if len(self.open_positions) >= self.config.max_concurrent_positions:
