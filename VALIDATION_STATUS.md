@@ -33,7 +33,7 @@ ROBUST (capital): n >= 200, net PF > 1.25, win rate > 45%, Sharpe > 1.2, max DD 
 | Strategy | Verdict | Key numbers | Record |
 |----------|---------|-------------|--------|
 | crypto-SMC 5m sniper | FAIL | gross-negative | `research_archive/legacy_smc_failures/SMC_5m_SNIPER_FAIL.md` |
-| crypto-SMC H1 entry | FRAGILE | CPCV median PF 0.9157, MC 5th-pct 0.8890 | `research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md` |
+| crypto-SMC H1 entry | FRAGILE | CPCV median PF 0.9157, MC 5th-pct 0.8890 | `research_archive/2026-06-12_crypto_smc_fragile/` (verdict.json) · `research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md` |
 | M15 fee-trap | FAIL | gross-negative across 3 instruments | — |
 | ALiVMassit | FRAGILE | 82.7% WR / 0.14 PF (WR ≠ edge) | — |
 | dual-mode scalper | REVERTED | scalpers could never fire | — |
