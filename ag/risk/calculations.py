@@ -6,7 +6,7 @@ Adapted from auto-trade-system/app/risk/calculations.py.
 """
 from __future__ import annotations
 
-from decimal import Decimal, ROUND_DOWN, ROUND_HALF_EVEN
+from decimal import Decimal, ROUND_HALF_EVEN
 from typing import Union
 
 Number = Union[Decimal, int, float, str]

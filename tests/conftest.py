@@ -1,6 +1,5 @@
 """Shared pytest fixtures for ag-auto-trade tests."""
 import pytest
-from ag.validation.metrics import BacktestResult
 from ag.validation.cost_model import CostModel
 
 

@@ -94,7 +94,6 @@ class RegimeClassifier:
         atr_pct = float((recent_atr < current_atr).sum() / len(recent_atr) * 100)
 
         current_adx = float(adx.iloc[-1])
-        current_price = float(df["close"].iloc[-1])
 
         # EMA slope: 5-bar % change of EMA50
         ema50_slope = 0.0
