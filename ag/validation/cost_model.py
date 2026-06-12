@@ -44,6 +44,22 @@ class CostModel:
             return float("inf") if wins > 0 else 1.0
         return wins / losses
 
+    def with_shock(
+        self,
+        spread_mult: float = 1.5,
+        slippage_mult: float = 2.0,
+    ) -> "CostModel":
+        """Return a copy with spread and slippage scaled. Commission is unchanged.
+
+        Use for stress-testing: does the strategy survive wider spreads and
+        worse fills? Typical shock: spread_mult=1.5, slippage_mult=2.0.
+        """
+        return CostModel(
+            spread_r=self.spread_r * spread_mult,
+            commission_r=self.commission_r,
+            slippage_r=self.slippage_r * slippage_mult,
+        )
+
     @classmethod
     def for_gc(cls) -> "CostModel":
         """GC/MGC (Gold futures) — slightly wider spread than FX."""

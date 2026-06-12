@@ -3,13 +3,22 @@
 Last updated: 2026-06-12
 Gate version: v4 (locked in `ag/validation/lock_before_look/GATE_DECISION.md`)
 
+## Engine Standard
+
+**Gate engine: `ag/validation/` stack ONLY.**
+`ag/validation/gate.py` · `cpcv.py` · `walk_forward.py` · `monte_carlo.py` · `deflated_sharpe.py`
+
+The old `innovative_backtest_engine.py` (from auto-trade-system archive) is legacy — it lacks
+trial-count-aware DSR and uses a Sharpe-degradation proxy instead of true CPCV. It must not be
+used for any A1/A2/A3 gate evaluation. See `docs/validation/G1_DATA_READINESS.md` §1 for detail.
+
 ## Alpha Verdicts
 
-| Alpha | Status      | Trades (n) | Net PF | Verdict | Notes |
-|-------|------------|------------|--------|---------|-------|
-| A1    | NOT TESTED | —          | —      | PENDING | SMC-filter + momentum/delta |
-| A2    | NOT TESTED | —          | —      | PENDING | Master-trader copy (SignalStart, 4,437 trades) |
-| A3    | NOT TESTED | —          | —      | PENDING | Ensemble (A1×0.4 + regime×0.3 + A2×0.3 > 0.75) |
+| Alpha | Status  | Trades (n) | Net PF | Verdict | Notes |
+|-------|---------|------------|--------|---------|-------|
+| A1    | NOT TESTED | —       | —      | PENDING | SMC-filter + momentum/delta |
+| A2    | TESTED  | 325 (OOS)  | 3.745  | **READ (OPTIMISTIC)** | Master-trader copy; DSR fails (z=−25.32); 10/11 pass. See `docs/validation/A2_GATE_RESULT.md` |
+| A3    | NOT TESTED | —       | —      | PENDING | Ensemble (A1×0.4 + regime×0.3 + A2×0.3 > 0.75) |
 
 ## Gate Thresholds (pre-registered, immutable)
 
@@ -28,6 +37,7 @@ ROBUST (capital): n >= 200, net PF > 1.25, win rate > 45%, Sharpe > 1.2, max DD 
 | M15 fee-trap | FAIL | gross-negative across 3 instruments | — |
 | ALiVMassit | FRAGILE | 82.7% WR / 0.14 PF (WR ≠ edge) | — |
 | dual-mode scalper | REVERTED | scalpers could never fire | — |
+| GoldTrendFollowing v2 | FRAGILE | OOS honest intrabar: n=47, PF 1.017, Sharpe 0.235, WR 34% | `docs/validation/GOLDTF_REVALIDATION.md` |
 
 ## Rules (immutable)
 
