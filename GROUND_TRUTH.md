@@ -23,8 +23,8 @@
 
 ## Build Order (v4)
 
-1. Validation core (plain Python, zero engine dependency) ← CURRENT
-2. Platform (risk, regime, monitoring, infrastructure)
-3. Alpha modules (A1, A2, A3 to common generate_signal() interface)
+1. Validation core (plain Python, zero engine dependency) ✅ 2026-06-12
+2. Platform (risk, regime, monitoring, infrastructure) ✅ 2026-06-12 (risk/regime tests still owed)
+3. Alpha modules (A1, A2, A3 to common generate_signal() interface) ← CURRENT
 4. Gate race (A1 vs A2 vs A3 — cloud MAIN, compute-heavy)
 5. Execution (Nautilus L3 + IB) — only if a ROBUST alpha exists
