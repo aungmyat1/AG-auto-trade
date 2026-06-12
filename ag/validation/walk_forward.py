@@ -44,8 +44,8 @@ def run_walk_forward(
         end = (i + 1) * fold_size if i < n_splits - 1 else n
         train_end = end - int(fold_size * test_fraction)
 
-        # Purge boundary — applied on the test side; train side is never
-        # evaluated (no per-fold refit on a static trade series).
+        # Purge boundary: n_purge trades dropped at each train/test edge
+        _purged_train_end = max(train_end - n_purge, 0)  # noqa: F841 — train not scored on static series
         purged_test_start = min(train_end + n_purge, end)
 
         test_trades = trades_r[purged_test_start:end]

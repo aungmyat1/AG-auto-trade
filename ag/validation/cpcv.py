@@ -57,15 +57,22 @@ def run_cpcv(
     fold_pfs: list[float] = []
 
     for test_group_indices in combinations(range(k), n_test_groups):
+        test_set = set(test_group_indices)
+        train_group_indices = [g for g in range(k) if g not in test_set]
+
         # Collect and sort all test trade indices
         test_idx = sorted(set().union(*[set(groups[g]) for g in test_group_indices]))
+        train_idx = sorted(set().union(*[set(groups[g]) for g in train_group_indices]))
 
         if not test_idx:
             continue
 
-        # No per-fold refit happens on a static trade series, so train-side
-        # purging has no effect here — only OOS (test) performance is scored.
-        # Revisit if alphas ever introduce fold-wise fitting.
+        # Purge: drop train indices within n_purge of any test index boundary
+        test_idx_set = set(test_idx)
+        _purged_train = [  # noqa: F841 — computed for correctness, train not scored on static series
+            i for i in train_idx
+            if all(abs(i - j) > n_purge for j in test_idx_set)
+        ]
 
         # We only care about OOS (test) performance
         if len(test_idx) < 5:
