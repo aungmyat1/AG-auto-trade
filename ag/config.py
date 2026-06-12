@@ -1,10 +1,29 @@
 """
 AG Auto Trade configuration.
 
-Phase 0: validation constants only.
-Phase 1+: add Databento credentials, Nautilus settings, IB connection.
+Immutable constants (gate thresholds, risk limits, instruments) live here.
+Runtime-configurable env vars (API keys, connection params) are in ag/env.py.
+Import both modules as needed — never override gate/risk constants via env vars.
 """
 from __future__ import annotations
+
+from ag.env import (  # re-exported for one-stop config import convenience
+    DATABENTO_API_KEY,
+    IB_CLIENT_ID,
+    IB_HOST,
+    IB_PORT,
+    TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHAT_ID,
+)
+
+__all__ = [
+    "DATABENTO_API_KEY",
+    "IB_CLIENT_ID",
+    "IB_HOST",
+    "IB_PORT",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+]
 
 
 # ── Instruments (Phase 1+ — add Databento dataset IDs) ──────────────────────
