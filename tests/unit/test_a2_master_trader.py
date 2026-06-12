@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from ag.alpha.a2_master_trader.loader import RawTrade, SplitResult, split_is_oos, IS_N
+from ag.alpha.a2_master_trader.loader import RawTrade, split_is_oos, IS_N
 from ag.alpha.a2_master_trader.replay import (
     compute_reference_pip,
     trades_to_r_multiples,
@@ -209,7 +209,6 @@ class TestA2MasterTrader:
         assert signal is None
 
     def test_no_signal_after_trade_closes(self):
-        lag_ms = COPY_LAG_SECONDS * 1000
         open_ts = self.BASE_TS
         close_ts = self.BASE_TS + 3_600_000
         context_ts = close_ts + 1_000  # 1 second AFTER close

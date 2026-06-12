@@ -49,7 +49,6 @@ class A2MasterTrader(AlphaModule):
         Returns None if no open master trade at this timestamp.
         """
         ts_ms: int = market_data.get("timestamp_ms", 0)
-        price: float = market_data.get("price", 0.0)
 
         for trade in self._open_trades:
             copy_open_ms = trade["open_time_ms"] + COPY_LAG_SECONDS * 1000

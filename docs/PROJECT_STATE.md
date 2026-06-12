@@ -4,12 +4,13 @@ Last updated: 2026-06-12
 
 ## Current Stage
 
-**Platform built, alphas not started.** v4 build order position:
+**A2 built and gated (READ). Phase 6 nearly complete.** v4 build order position:
 
-1. ✅ Validation core (gate, CPCV, purged WF, Monte Carlo, DSR, cost model) — 21 tests green
-2. 🟡 Platform — risk engine + regime classifier implemented but **untested**; monitoring =
-   Telegram stub; infrastructure/ + data/ empty
-3. ⬜ Alpha modules A1 / A2 / A3 ← **CURRENT GOAL**
+1. ✅ Validation core (gate, CPCV, purged WF, Monte Carlo, DSR, cost model) — 45 tests green
+2. 🟡 Platform — risk engine + regime classifier implemented; **tests written 2026-06-12**;
+   monitoring = Telegram stub; infrastructure/ + data/ empty
+3. 🟡 Alpha modules — A2 ✅ READ verdict (2026-06-12); A1 spec locked (2026-06-12);
+   A1 code + A3 ← **CURRENT GOAL**
 4. ⬜ Gate race (identical gate, all three alphas)
 5. ⬜ Execution (Nautilus + IB) — forbidden until a ROBUST verdict exists
 
@@ -17,31 +18,33 @@ Last updated: 2026-06-12
 
 - Instruments: GC (primary), MGC, 6E — per-instrument models, never shared
 - Gate: `ag/validation/lock_before_look/GATE_DECISION.md` (locked 2026-06-12, immutable)
-- Status of alphas: A1 NOT TESTED · A2 NOT TESTED · A3 NOT TESTED (`VALIDATION_STATUS.md`)
+- Status of alphas: A1 SPEC LOCKED · A2 READ (OPTIMISTIC, n=325 OOS) · A3 NOT TESTED
+  See `VALIDATION_STATUS.md` and `docs/validation/A2_GATE_RESULT.md`
 - Live trading: **OFF** (no ROBUST verdict exists; nothing may trade)
 
 ## Last Validation Evidence
 
-- 2026-06-12: full test suite 21/21 green (cost model, deflated Sharpe, gate)
-- No alpha has ever been gate-raced in this repo
+- 2026-06-12: A2 gated — 10/11 PASS, DSR FAIL (z=−25.32), verdict READ
+  net PF=3.745, Sharpe=6.34, max DD=11.56%, CPCV=3.719, WF=100%, MC p5=3.745
+- 2026-06-12: full test suite 45/45 green
 
-## Known Gaps (carry-over from 2026-06-12 status review)
+## Known Gaps
 
 | Gap | Action |
 |---|---|
-| ~~Branch protection OFF on `main`~~ | ✅ Closed 2026-06-12 — owner enabled protection (require PR + checks, no force push) |
-| ~~No CI~~ | ✅ Closed 2026-06-12 — `.github/workflows/ci.yml` on main; first run red until the build-backend fix (PR #1 or PR #2) merges |
+| ~~Branch protection OFF on `main`~~ | ✅ Closed 2026-06-12 |
+| ~~No CI~~ | ✅ Closed 2026-06-12 |
+| ~~Risk engine + regime classifier have zero tests~~ | ✅ Closed 2026-06-12 |
+| ~~research_archive half-seeded~~ | ✅ Closed 2026-06-12 — M15, ALiVMassit, dual-mode verdict files added |
 | Lock-before-look loader missing | Gate thresholds hardcoded in `gate.py`/`config.py`; no code reads GATE_DECISION.md. Build with alphas. |
-| Risk engine + regime classifier have zero tests | Write before alphas depend on them |
-| research_archive half-seeded | M15 fee-trap, ALiVMassit, dual-mode scalper rows lack record files |
-| CPCV/WF train-side purge is a no-op | By design today (no per-fold refit on a static trade series; test-side purge IS applied). Revisit if fold-wise fitting is ever added. |
-| ~~`ag/validation/cost_models/` empty dup~~ | ✅ Closed 2026-06-12 — empty package deleted |
+| CPCV/WF train-side purge is a no-op | By design (no per-fold refit on a static trade series; test-side purge IS applied). Revisit if fold-wise fitting is added. |
+| ~~`ag/validation/cost_models/` empty dup~~ | ✅ Closed 2026-06-12 |
 
 ## Next Goal
 
-Implement A1 (SMC-filter + momentum/delta), A2 (master-trader copy), A3 (ensemble) against
-`ag/alpha/base.py::AlphaModule`, with tests, logging every threshold tried (DSR trial count).
-Then race all three through the gate on Databento GC history.
+Build A1 (SMC-filter + momentum/delta) code against the locked spec
+(`ag/validation/lock_before_look/A1_SMC_MOMENTUM_DECISION.md`), with tests.
+Then A3 ensemble. Then race A1/A2/A3 through the identical gate on GC history.
 
 ## Update Protocol
 
