@@ -50,6 +50,7 @@ Last updated: 2026-06-12
 | ~~Branch protection OFF on `main`~~ | ✅ Closed 2026-06-12 |
 | ~~No CI~~ | ✅ Closed 2026-06-12 |
 | ~~Risk engine + regime classifier have zero tests~~ | ✅ Closed 2026-06-12 |
+| Risk G5 leverage guard is a no-op (`ag/risk/engine.py` — "enforced at execution layer"; pinned by `test_validate_entry_does_not_check_leverage`) | Implement `leverage` param + test before any execution work (`docs/IMPLEMENTATION_PLAN.md` Phase A item A2) |
 | ~~research_archive half-seeded~~ | ✅ Closed 2026-06-12 — M15, ALiVMassit, dual-mode verdict files added |
 | Lock-before-look loader missing | Gate thresholds hardcoded in `gate.py`/`config.py`; no code reads GATE_DECISION.md. Build with alphas. |
 | CPCV/WF train-side purge is a no-op | By design (no per-fold refit on a static trade series; test-side purge IS applied). Revisit if fold-wise fitting is added. |
@@ -67,6 +68,11 @@ Phase B MVP (Sweep+CHOCH only alpha):
   4. Once MVP produces ≥100 net trades, gate it. Then add one filter at a time.
 
 After Phase B passes gate: A3 ensemble. Then race A0/A1/A2/A3 through identical gate.
+
+Naming note: "Phase B" above is the dispatch phase name for the MVP alpha (A0).
+`docs/IMPLEMENTATION_PLAN.md` Phase B = the Databento data layer — still unbuilt
+(`ag/data/databento/` is an empty package) and a prerequisite for step 2's
+real-GC-data signal audit and for any A1 gate run.
 
 ## Update Protocol
 

@@ -29,18 +29,18 @@ infrastructure. Risk engine + regime classifier implemented but untested. **New 
 (2026-06-12): G5 leverage guard in `RiskEngine.validate_entry()` is a no-op** — documented
 as one of six non-bypassable guards but enforces nothing (`ag/risk/engine.py:121`).
 
-**Update (2026-06-12 PM):** PR #3 (`dispatch-3-a1-spec-phase6`; independently verified —
-209/209 tests + ruff clean at its head) overtakes parts of this plan before merging:
+**Reconciled post-merge (2026-06-12, PRs #3 + #4 both on main):**
 
-- **Phase A largely delivered there:** risk-engine tests (29) + regime-classifier tests (16).
-  G5 is still a no-op — that branch *pins* the gap (`test_validate_entry_does_not_check_leverage`)
-  rather than closing it, so item A2 stands. Item A4 (lock-before-look consistency test) still open.
-- **Phase C well underway there:** A1 detectors (OB/FVG/liquidity/BOS-ChoCH/displacement) +
-  pipeline + `A1SmcMomentum` wrapper + signal-audit tracker built; A2 built **and gated —
-  verdict READ (OPTIMISTIC)**: 10/11 checks pass, DSR z = −25.32 → not ROBUST, usable only as
-  the A3 ensemble input. A1 spec locked, BLOCKED pending Databento data.
-- **Critical path after #3 merges is Phase B (Databento data layer)**; this plan needs a
-  reconciliation pass at that point (this section is the diff to apply).
+- **Phase A:** items A1 + A3 delivered (risk engine 29 tests, regime classifier 16 tests).
+  **Items A2 (G5 leverage fix) and A4 (lock-before-look consistency test) remain open** —
+  G5 is still a no-op, pinned by `test_validate_entry_does_not_check_leverage`.
+- **Phase C:** A1 detectors/pipeline/`A1SmcMomentum` wrapper + signal-audit tracker built;
+  A2 built and gated — **READ (OPTIMISTIC)**, 10/11 pass, DSR z = −25.32 → not ROBUST,
+  A3-ensemble input only; A1 spec locked, blocked pending data. PROJECT_STATE's next goal
+  inserts an MVP alpha (A0, sweep+CHOCH — dispatch naming "Phase B MVP", distinct from this
+  plan's Phase B) ahead of A3.
+- **Critical path: this plan's Phase B — the Databento data layer (`ag/data/databento/`
+  still empty)** — required by both the A0 signal audit on real GC data and any A1 gate run.
 
 ## 3. Phases
 
