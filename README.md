@@ -6,8 +6,8 @@ Validation-first futures trading system. The gate is the asset; strategy is a ca
 
 1. ✅ Validation core — plain Python, zero engine dependency
 2. ✅ Risk engine (6 sequential guards) + regime classifier (4 regimes)
-3. ⬜ Alpha modules: A1 (SMC-filter+momentum), A2 (master-trader), A3 (ensemble)
-4. ⬜ Gate race: all three through identical gate (cloud MAIN, compute-heavy)
+3. 🟡 Alpha modules: A1 detectors + wrapper built (not yet gated) · A2 READ verdict · A3 pending
+4. ⬜ Gate race: all three through identical gate (blocked: Databento data)
 5. ⬜ Execution (Nautilus + IB) — only if a ROBUST alpha exists
 
 ## Instruments
@@ -34,8 +34,9 @@ SMC answers WHERE; momentum/delta answers WHEN. SMC never generates entries.
 
 ```bash
 cd ag-auto-trade
-.venv/bin/python3 -m pytest tests/ -v              # 21 tests, all green
+.venv/bin/python3 -m pytest tests/ -q              # 209 tests, all green
 .venv/bin/python3 scripts/run_gate.py --help       # gate CLI
+.venv/bin/python3 scripts/run_signal_audit.py --help  # SMC funnel audit
 ```
 
 ## Alpha status
@@ -48,12 +49,13 @@ See `VALIDATION_STATUS.md`
 ag/validation/      VALIDATION CORE — built first, gate is the asset
 ag/risk/            Risk engine — 6 sequential guards, non-bypassable
 ag/regime/          Regime classifier — ADX/ATR/HTF, 4 regimes
-ag/alpha/           Alpha interface + 3 stubs (A1/A2/A3), built after gate locked
-  a1_smc_momentum/  SMC filter + momentum/delta trigger
-  a2_master_trader/ SignalStart copy-trade (data in data/master_traders/)
-  a3_ensemble/      Ensemble score > 0.75
+ag/alpha/           Alpha interface + implementations; all race identical gate
+  a1_smc_momentum/  SMC context filter + momentum (detectors + SmcPipeline + A1SmcMomentum wrapper)
+  a2_master_trader/ SignalStart copy-trade — READ verdict (10/11 criteria, DSR fail z=−25.32)
+  a3_ensemble/      Ensemble score > 0.75 (pending gate race)
 ag/data/            Databento + IB live (Phase 1+)
 ag/execution/       Nautilus L3 + IB venue (Phase 3 only)
-ag/monitoring/      Telegram alerts (stdlib, no bloat)
+ag/monitoring/      Telegram alerts (stdlib urllib only — no requests)
+ag/validation/signal_audit/  SignalFunnelTracker — stage counters + rejection log
 research_archive/   Validated NEGATIVE results — never deleted, never re-run
 ```
