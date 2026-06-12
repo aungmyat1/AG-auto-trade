@@ -6,8 +6,7 @@ The gate runs on these; cost_model applies per-trade cost before net checks.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 import statistics
 import math
 

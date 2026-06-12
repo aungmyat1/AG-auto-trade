@@ -1,6 +1,4 @@
 """Unit tests for Deflated Sharpe Ratio."""
-import pytest
-import math
 from ag.validation.deflated_sharpe import expected_max_sr, deflated_sharpe_z
 
 

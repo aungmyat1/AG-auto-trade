@@ -1,5 +1,4 @@
 """Unit tests for the ValidationGate battery."""
-import pytest
 from ag.validation import ValidationGate, BacktestResult, CostModel
 
 
