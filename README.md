@@ -6,7 +6,7 @@ Validation-first futures trading system. The gate is the asset; strategy is a ca
 
 1. ✅ Validation core — plain Python, zero engine dependency
 2. ✅ Risk engine (6 sequential guards) + regime classifier (4 regimes)
-3. 🟡 Alpha modules: A1 detectors + wrapper built (not yet gated) · A2 READ verdict · A3 pending
+3. 🟡 Alpha modules: A1 detectors + wrapper built (not yet gated) · A2 READ verdict · A3 skeleton + spec locked
 4. ⬜ Gate race: all three through identical gate (blocked: Databento data)
 5. ⬜ Execution (Nautilus + IB) — only if a ROBUST alpha exists
 
@@ -34,9 +34,10 @@ SMC answers WHERE; momentum/delta answers WHEN. SMC never generates entries.
 
 ```bash
 cd ag-auto-trade
-.venv/bin/python3 -m pytest tests/ -q              # 209 tests, all green
+.venv/bin/python3 -m pytest tests/ -q              # 259 tests, all green
 .venv/bin/python3 scripts/run_gate.py --help       # gate CLI
 .venv/bin/python3 scripts/run_signal_audit.py --help  # SMC funnel audit
+.venv/bin/python3 scripts/run_alpha_backtest.py --alpha a0_mvp --synthetic  # smoke test
 ```
 
 ## Alpha status
@@ -52,10 +53,12 @@ ag/regime/          Regime classifier — ADX/ATR/HTF, 4 regimes
 ag/alpha/           Alpha interface + implementations; all race identical gate
   a1_smc_momentum/  SMC context filter + momentum (detectors + SmcPipeline + A1SmcMomentum wrapper)
   a2_master_trader/ SignalStart copy-trade — READ verdict (10/11 criteria, DSR fail z=−25.32)
-  a3_ensemble/      Ensemble score > 0.75 (pending gate race)
+  a3_ensemble/      Ensemble 0.4·smc + 0.3·regime + 0.3·master > 0.75 (spec locked, not yet gated)
 ag/data/            Databento + IB live (Phase 1+)
 ag/execution/       Nautilus L3 + IB venue (Phase 3 only)
 ag/monitoring/      Telegram alerts (stdlib urllib only — no requests)
 ag/validation/signal_audit/  SignalFunnelTracker — stage counters + rejection log
+ag/validation/trial_log.py   Append-only trial registry — honest --n-trials for DSR
+scripts/run_alpha_backtest.py  Replay harness → trades CSV → run_gate.py
 research_archive/   Validated NEGATIVE results — never deleted, never re-run
 ```

@@ -1,9 +1,4 @@
-"""
-Unit tests for RiskEngine — all 6 guards + state management.
-
-G5 (leverage) is advisory and NOT enforced in validate_entry(), so there
-is no direct validate_entry() test for G5 — see comment on G5 in engine.py.
-"""
+"""Unit tests for RiskEngine — all 6 guards + state management."""
 from __future__ import annotations
 
 import time
@@ -199,16 +194,36 @@ class TestG4PositionSize:
         assert result.approved is True
 
 
-# ── G5: leverage (advisory — not enforced in validate_entry) ───────────────────
+# ── G5: leverage ──────────────────────────────────────────────────────────────
 
-class TestG5LeverageAdvisory:
-    def test_validate_entry_does_not_check_leverage(self):
-        # G5 is advisory; validate_entry() has no leverage parameter
-        # Verify the method signature — this confirms G5 is out of the guard chain
-        engine = RiskEngine()
-        import inspect
-        sig = inspect.signature(engine.validate_entry)
-        assert "leverage" not in sig.parameters
+class TestG5Leverage:
+    def test_leverage_at_limit_passes(self):
+        engine = _engine(max_leverage=5)
+        result = engine.validate_entry(0.005, leverage=5.0)
+        assert result.approved is True
+
+    def test_leverage_below_limit_passes(self):
+        engine = _engine(max_leverage=5)
+        result = engine.validate_entry(0.005, leverage=2.0)
+        assert result.approved is True
+
+    def test_leverage_over_limit_rejects(self):
+        engine = _engine(max_leverage=5)
+        result = engine.validate_entry(0.005, leverage=5.1)
+        assert result.approved is False
+        assert any("G5" in v for v in result.violations)
+
+    def test_g5_violation_message_contains_values(self):
+        engine = _engine(max_leverage=5)
+        result = engine.validate_entry(0.005, leverage=10.0)
+        g5_msg = next(v for v in result.violations if "G5" in v)
+        assert "10.0" in g5_msg
+        assert "5" in g5_msg
+
+    def test_default_leverage_one_always_passes(self):
+        engine = _engine(max_leverage=5)
+        result = engine.validate_entry(0.005)  # leverage defaults to 1.0
+        assert result.approved is True
 
 
 # ── G6: concurrent positions ──────────────────────────────────────────────────

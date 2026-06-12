@@ -4,44 +4,44 @@ Last updated: 2026-06-12
 
 ## Current Stage
 
-**A2 built and gated (READ). Phase 6 nearly complete.** v4 build order position:
+**Dispatch 4 complete. Phase A hardening done.** v4 build order position:
 
 1. ✅ Validation core (gate, CPCV, purged WF, Monte Carlo, DSR, cost model) — 45 tests green
-2. 🟡 Platform — risk engine + regime classifier implemented; **tests written 2026-06-12**;
-   monitoring = Telegram stub; infrastructure/ + data/ empty
-3. 🟡 Alpha modules — A2 ✅ READ verdict (2026-06-12); A1 spec locked (2026-06-12);
-   A1 SMC detectors built (OB/FVG/BOS-CHOCH/Liquidity/Displacement, 2026-06-12);
-   A1SmcMomentum wrapper built (multi-OB tracking + full rejection logging, 2026-06-12);
-   SmcPipeline composable architecture built; SignalFunnelTracker built;
-   Phase 1 infra built (BacktestResult+4 metrics, CostModel.with_shock(),
-   stress tests, synthetic scenarios — 209 tests green);
-   scripts/run_signal_audit.py — progressive filter audit tool;
-   A3 ← **CURRENT GOAL** (after Phase B MVP lock-before-look spec)
-4. ⬜ Gate race (identical gate, all three alphas)
+   - CPCV train-side purging: implemented (was cosmetically a no-op)
+   - Lock-before-look consistency test: A4 added (`tests/unit/test_lock_before_look.py`)
+     verifies gate.py ↔ config.py ↔ GATE_DECISION.md alignment on every CI run
+2. ✅ Platform — risk engine + regime classifier + tests; monitoring = Telegram stub;
+   infrastructure/ + data/ empty (Phase B)
+   - G5 leverage guard: **FIXED** — now a real check (`validate_entry(leverage=1.0)`)
+     previously a no-op comment; 5 new tests confirm enforcement
+3. 🟡 Alpha modules:
+   - A2: READ verdict (2026-06-12) — 10/11 criteria, DSR fail z=−25.32
+   - A1: spec locked, detectors built, A1SmcMomentum wrapper built (not yet gated)
+   - **A0_MVP**: spec locked (`A0_MVP_DECISION.md`) — sweep+choch only phase B MVP
+   - **A3**: spec locked (`A3_ENSEMBLE_DECISION.md`) + skeleton built (not yet gated)
+   - Trial registry built: `ag/validation/trial_log.py` — honest --n-trials accounting
+   - Backtest harness built: `scripts/run_alpha_backtest.py`
+4. ⬜ Gate race (identical gate, all alphas) — BLOCKED: Databento data
 5. ⬜ Execution (Nautilus + IB) — forbidden until a ROBUST verdict exists
 
 ## Active Validation Target
 
 - Instruments: GC (primary), MGC, 6E — per-instrument models, never shared
 - Gate: `ag/validation/lock_before_look/GATE_DECISION.md` (locked 2026-06-12, immutable)
-- Status of alphas: A1 SPEC LOCKED · A2 READ (OPTIMISTIC, n=325 OOS) · A3 NOT TESTED
-  See `VALIDATION_STATUS.md` and `docs/validation/A2_GATE_RESULT.md`
+- Status of alphas:
+  - A0_MVP: SPEC LOCKED · not yet gated
+  - A1: SPEC LOCKED · not yet gated
+  - A2: READ (OPTIMISTIC, n=325 OOS)
+  - A3: SPEC LOCKED · skeleton built · not yet gated
 - Live trading: **OFF** (no ROBUST verdict exists; nothing may trade)
 
 ## Last Validation Evidence
 
 - 2026-06-12: A2 gated — 10/11 PASS, DSR FAIL (z=−25.32), verdict READ
   net PF=3.745, Sharpe=6.34, max DD=11.56%, CPCV=3.719, WF=100%, MC p5=3.745
-- 2026-06-12: full test suite 45/45 green
-- 2026-06-12: A1 SMC detectors built — OB, FVG, BOS/CHOCH, Liquidity, Displacement
-  (ag/alpha/a1_smc_momentum/detectors/); SmcPipeline composable architecture built;
-  SignalFunnelTracker (ag/validation/signal_audit/) built for Phase A audit;
-  suite 173/173 green
-- 2026-06-12: Phase 1 infra — BacktestResult +4 informational metrics (calmar_ratio,
-  recovery_factor, max_consecutive_losses, time_in_drawdown_pct); CostModel.with_shock();
-  A1SmcMomentum wrapper (ag/alpha/a1_smc_momentum/a1_alpha.py) with multi-OB tracking
-  and per-filter rejection logging; stress test suite (36 new tests); synthetic scenarios;
-  scripts/run_signal_audit.py progressive filter audit tool; suite 209/209 green
+- 2026-06-12: Phase 1 infra + A1 detectors — suite 209/209 green
+- 2026-06-12 (Dispatch 4): G5 fix + A4 test + A0_MVP/A3 specs + trial registry
+  + backtest harness — suite 253/253 green
 
 ## Known Gaps
 
@@ -50,29 +50,26 @@ Last updated: 2026-06-12
 | ~~Branch protection OFF on `main`~~ | ✅ Closed 2026-06-12 |
 | ~~No CI~~ | ✅ Closed 2026-06-12 |
 | ~~Risk engine + regime classifier have zero tests~~ | ✅ Closed 2026-06-12 |
-| Risk G5 leverage guard is a no-op (`ag/risk/engine.py` — "enforced at execution layer"; pinned by `test_validate_entry_does_not_check_leverage`) | Implement `leverage` param + test before any execution work (`docs/IMPLEMENTATION_PLAN.md` Phase A item A2) |
-| ~~research_archive half-seeded~~ | ✅ Closed 2026-06-12 — M15, ALiVMassit, dual-mode verdict files added |
-| Lock-before-look loader missing | Gate thresholds hardcoded in `gate.py`/`config.py`; no code reads GATE_DECISION.md. Build with alphas. |
-| CPCV/WF train-side purge is a no-op | By design (no per-fold refit on a static trade series; test-side purge IS applied). Revisit if fold-wise fitting is added. |
-| ~~`ag/validation/cost_models/` empty dup~~ | ✅ Closed 2026-06-12 |
+| ~~research_archive half-seeded~~ | ✅ Closed 2026-06-12 |
+| ~~G5 leverage guard was a no-op~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
+| ~~No lock-before-look consistency test~~ | ✅ Closed 2026-06-12 (Dispatch 4, A4) |
+| ~~Trial registry missing~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
+| ~~A0_MVP spec not locked~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
+| ~~A3 spec not locked~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
+| Databento data layer | Phase B — BLOCKED on subscription |
+| CPCV/WF train-side purge scores only OOS | By design (no per-fold refit on static series) |
+| Lock-before-look loader missing | Gate thresholds hardcoded in gate.py; loader is the A4 test |
 
 ## Next Goal
 
-Phase B MVP (Sweep+CHOCH only alpha):
-  1. Write A0_MVP_DECISION.md (lock-before-look spec for Phase B MVP alpha).
-     Do NOT run the gate on Phase B without this file committed first.
-  2. Wire A1SmcMomentum(PipelineConfig(sweep=True, choch=True)) into a
-     backtest loop; run scripts/run_signal_audit.py on real GC data.
-  3. Measure funnel: sweeps → BOS/CHOCH → entries.  Target ≥1 entry per 20 bars.
-     If trade count is still too low, lower swing_lookback (3→2) and re-measure.
-  4. Once MVP produces ≥100 net trades, gate it. Then add one filter at a time.
-
-After Phase B passes gate: A3 ensemble. Then race A0/A1/A2/A3 through identical gate.
-
-Naming note: "Phase B" above is the dispatch phase name for the MVP alpha (A0).
-`docs/IMPLEMENTATION_PLAN.md` Phase B = the Databento data layer — still unbuilt
-(`ag/data/databento/` is an empty package) and a prerequisite for step 2's
-real-GC-data signal audit and for any A1 gate run.
+Phase B — Data layer:
+  1. Get Databento API key → `DATABENTO_API_KEY` in `.env`
+  2. Build `ag/data/databento/loader.py` — OHLCV 1m+1h for GC/MGC/6E, parquet cache
+  3. Build `ag/data/databento/integrity.py` — gap/duplicate/session checks
+  4. Log A0_MVP trial in `trial_log.py`, run `scripts/run_alpha_backtest.py --alpha a0_mvp`
+  5. Verify signal rate ≥ 1/20 bars. If not → lower swing_lookback, re-log trial.
+  6. Gate A0_MVP: `scripts/run_gate.py trades.csv --instrument GC --n-trials <from log>`
+  7. If A0_MVP ROBUST → add filters one at a time (each = new alpha ID + new decision file)
 
 ## Update Protocol
 
