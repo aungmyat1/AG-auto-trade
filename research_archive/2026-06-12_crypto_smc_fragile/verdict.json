@@ -1,0 +1,31 @@
+{
+  "experiment": "crypto_smc_btcusd_h1",
+  "closed": "2026-06-11",
+  "verdict": "FRAGILE",
+  "strategy": "SMCSniperH1Strategy",
+  "framework": "freqtrade==2026.5.1",
+  "instrument": "BTCUSD",
+  "timeframe": "1h",
+  "oos_window": "2026-02-03 to 2026-06-11",
+  "gate_results": {
+    "n_trades_oos": 333,
+    "pf_gross": 1.137,
+    "sharpe_per_trade": 0.0171,
+    "t_stat": 0.31,
+    "cpcv_median_pf": 0.9157,
+    "cpcv_pct_folds_above_1": 0.40,
+    "wf_folds_pass_pct": 0.60,
+    "mc_p5_pf": 0.8890,
+    "mc_p5_terminal_equity_r": -31.0,
+    "deflated_sharpe_z_is": 0.0009,
+    "deflated_sharpe_z_oos": -0.0114,
+    "n_trials": 2
+  },
+  "cross_instrument": {
+    "EURUSD_H1": {"pf": 0.893, "pass": false},
+    "XAUUSD_H1": {"pf": 0.698, "pass": false},
+    "XAUUSD_H4": {"pf": 0.810, "pass": false}
+  },
+  "conclusion": "Thin OOS pass consistent with sample luck. Edge does not survive resampling.",
+  "capital_deployed": false
+}
