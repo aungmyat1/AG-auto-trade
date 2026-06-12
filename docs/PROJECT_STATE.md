@@ -42,6 +42,11 @@ Last updated: 2026-06-12
 - 2026-06-12: Phase 1 infra + A1 detectors — suite 209/209 green
 - 2026-06-12 (Dispatch 4): G5 fix + A4 test + A0_MVP/A3 specs + trial registry
   + backtest harness — suite 253/253 green
+- 2026-06-12 (test-plan reconciliation): monitoring tests (15) + offline E2E
+  pipeline test (9: stub alpha → RiskEngine blocking verified → harness → gate;
+  noise ≠ ROBUST safety check) — suite 304/304 green. Uploaded TEST_PLAN parked
+  at `docs/reference/TEST_PLAN.md` with map; its §5.4 gate numbers superseded
+  by locked GATE_DECISION.md
 
 ## Known Gaps
 
