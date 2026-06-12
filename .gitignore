@@ -17,4 +17,7 @@ data/processed/
 *.parquet
 *.feather
 *.h5
+*.db
 logs/
+data/signalstart/
+data/master_traders/

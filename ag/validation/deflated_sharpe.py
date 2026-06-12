@@ -58,7 +58,9 @@ def deflated_sharpe_z(returns: list[float], n_trials: int) -> float:
 
     sigma = float(r.std(ddof=1))
     if sigma < 1e-10:
-        return 0.0
+        # Zero variance: classify by sign of mean (clearly losing = fail, clearly winning = pass)
+        mean = float(r.mean())
+        return -999.0 if mean < 0 else 0.0
 
     sr = float(r.mean()) / sigma  # per-observation SR
 

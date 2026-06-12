@@ -4,7 +4,11 @@ from ag.validation import ValidationGate, BacktestResult, CostModel
 
 
 def _make_trades(n_wins: int, n_losses: int, avg_win: float = 2.0, avg_loss: float = -1.0) -> list:
-    return [avg_win] * n_wins + [avg_loss] * n_losses
+    import random
+    trades = [avg_win] * n_wins + [avg_loss] * n_losses
+    random.seed(42)
+    random.shuffle(trades)
+    return trades
 
 
 class TestFloorChecks:
