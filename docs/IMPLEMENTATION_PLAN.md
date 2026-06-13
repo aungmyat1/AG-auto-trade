@@ -29,18 +29,20 @@ infrastructure. Risk engine + regime classifier implemented but untested. **New 
 (2026-06-12): G5 leverage guard in `RiskEngine.validate_entry()` is a no-op** — documented
 as one of six non-bypassable guards but enforces nothing (`ag/risk/engine.py:121`).
 
-**Update (2026-06-12 PM):** PR #3 (`dispatch-3-a1-spec-phase6`; independently verified —
-209/209 tests + ruff clean at its head) overtakes parts of this plan before merging:
+**Reconciled post-Dispatch-4 (2026-06-12 evening; suite 253/253 green):**
 
-- **Phase A largely delivered there:** risk-engine tests (29) + regime-classifier tests (16).
-  G5 is still a no-op — that branch *pins* the gap (`test_validate_entry_does_not_check_leverage`)
-  rather than closing it, so item A2 stands. Item A4 (lock-before-look consistency test) still open.
-- **Phase C well underway there:** A1 detectors (OB/FVG/liquidity/BOS-ChoCH/displacement) +
-  pipeline + `A1SmcMomentum` wrapper + signal-audit tracker built; A2 built **and gated —
-  verdict READ (OPTIMISTIC)**: 10/11 checks pass, DSR z = −25.32 → not ROBUST, usable only as
-  the A3 ensemble input. A1 spec locked, BLOCKED pending Databento data.
-- **Critical path after #3 merges is Phase B (Databento data layer)**; this plan needs a
-  reconciliation pass at that point (this section is the diff to apply).
+- **Phase A complete** — risk-engine tests (A1), G5 leverage guard implemented and enforced
+  (A2), regime tests (A3), lock-before-look consistency test in CI (A4).
+- **Phase C delivered ahead of Phase B:** A1 detectors/pipeline/wrapper (spec locked, not
+  gated); A2 gated **READ (OPTIMISTIC)** — not ROBUST, A3-input only; A3 spec locked +
+  skeleton (C3); trial registry `ag/validation/trial_log.py` (C4); backtest harness
+  `scripts/run_alpha_backtest.py` (C5). A fourth entrant **A0_MVP** (sweep+ChoCH, dispatch
+  naming "Phase B MVP" — distinct from this plan's Phase B) was added with its own
+  pre-registered spec.
+- **The single remaining blocker is this plan's Phase B — the Databento data layer**
+  (`ag/data/databento/` empty; awaiting a Databento subscription/API key, an owner action).
+  Phase D (gate race, now A0/A1/A2/A3) runs the moment GC history exists; Phase E stays
+  ROBUST-gated.
 
 ## 3. Phases
 
