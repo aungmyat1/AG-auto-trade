@@ -22,10 +22,10 @@
       "Bash(git push*)",
       "Bash(gh pr create*)",
       "Bash(gh pr list*)",
-      "Bash(gh pr view*)"
+      "Bash(gh pr view*)",
+      "Bash(git merge*)"
     ],
     "deny": [
-      "Bash(git merge*)",
       "Bash(git rebase*)",
       "Bash(git reset*)",
       "Bash(pip install*)",

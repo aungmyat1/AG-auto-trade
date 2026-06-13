@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """PreToolUse guard for Bash commands.
 
-Three rails, enforced before the command runs:
+Four rails, enforced before the command runs:
   1. git commit  -> scan pending changes + untracked files for secret material.
   2. git push    -> full test suite must pass (pytest tests/ -q).
   3. git push --force to main -> always blocked.
+  4. git merge   -> full test suite must pass (pytest tests/ -q).
 
 Exit 0 = allow. Exit 2 = block (stderr is shown to the agent).
 Infrastructure errors fail OPEN (exit 0) so a broken guard cannot brick the
@@ -89,6 +90,7 @@ def main() -> None:
 
     is_commit = re.search(r"\bgit\b[^|;&]*\bcommit\b", command)
     is_push = re.search(r"\bgit\b[^|;&]*\bpush\b", command)
+    is_merge = re.search(r"\bgit\b[^|;&]*\bmerge\b", command)
 
     if is_push and re.search(r"(--force\b|--force-with-lease\b|\s-f\b)", command) \
             and re.search(r"\b(main|master)\b", command):
@@ -110,22 +112,24 @@ def main() -> None:
             )
             sys.exit(2)
 
-    if is_push:
+    if is_push or is_merge:
         try:
             result = subprocess.run(
                 [sys.executable, "-m", "pytest", "tests/", "-q", "-x"],
                 cwd=PROJECT_DIR, capture_output=True, text=True, timeout=300,
             )
         except FileNotFoundError:
-            print("BLOCKED: pytest unavailable — run the session-start hook "
-                  "(pip install -e '.[dev]') before pushing.", file=sys.stderr)
+            action = "pushing" if is_push else "merging"
+            print(f"BLOCKED: pytest unavailable — run the session-start hook "
+                  f"(pip install -e '.[dev]') before {action}.", file=sys.stderr)
             sys.exit(2)
         except Exception:
             sys.exit(0)
         if result.returncode != 0:
             tail = (result.stdout + result.stderr)[-1500:]
+            action = "push" if is_push else "merge"
             print(
-                "BLOCKED: test suite must pass before push (rule: tests before push).\n"
+                f"BLOCKED: test suite must pass before {action} (rule: tests before {action}).\n"
                 + tail,
                 file=sys.stderr,
             )
