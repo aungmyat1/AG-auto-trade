@@ -6,16 +6,18 @@
 ## System Pipeline (end-to-end)
 
 ```
- ┌─────────────────────────────────────────────────────────────────────────┐
- │                         SIGNAL PIPELINE                                  │
- │                                                                          │
- │  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐          │
- │  │   DATA   │───▶│  ALPHA   │───▶│   RISK   │───▶│ EXECUTE  │          │
- │  │ Databento│    │ propose()│    │ validate │    │  IB/Naut │          │
- │  └──────────┘    └──────────┘    └──────────┘    └──────────┘          │
- │      ⬜ B           🟡 C           ✅ done          ⬜ D                 │
- │   BLOCKED ◀────────────────── GATE required ───────────────────────▶   │
- └─────────────────────────────────────────────────────────────────────────┘
+ ┌──────────────────────────────────────────────────────────────────────────┐
+ │                          SIGNAL PIPELINE                                  │
+ │                                                                           │
+ │  ┌──────────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐       │
+ │  │     DATA     │───▶│  ALPHA   │───▶│   RISK   │───▶│ EXECUTE  │       │
+ │  │  IB (MVP)    │    │ propose()│    │ validate │    │  IB/Naut │       │
+ │  │  Databento ↑ │    │          │    │          │    │          │       │
+ │  └──────────────┘    └──────────┘    └──────────┘    └──────────┘       │
+ │     🟡 B  ←  first download pending    ✅ done          🔒 D/E           │
+ │                                                                           │
+ │  ◀────────── GATE required before execution layer may be built ─────────▶│
+ └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -24,8 +26,8 @@
 
 ```
 Phase A  Platform hardening     ████████████████████  100%  ✅ DONE
-Phase B  Data layer             ░░░░░░░░░░░░░░░░░░░░    0%  🔴 BLOCKED
-Phase C  Alpha gate race        ████░░░░░░░░░░░░░░░░   20%  🟡 IN PROGRESS
+Phase B  Data layer             ████████████████░░░░   80%  🟡 FIRST DOWNLOAD PENDING
+Phase C  Alpha gate race        ████░░░░░░░░░░░░░░░░   20%  🟡 WAITING ON DATA
 Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 ```
@@ -35,19 +37,40 @@ Phase E  Live trading           ░░░░░░░░░░░░░░░░
 ## ══════════════ YOU ARE HERE ══════════════
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  🔴  CURRENT BLOCKER                                │
-│                                                     │
-│  Databento API key not set.                         │
-│  Every downstream step is gated behind real data.   │
-│                                                     │
-│  FIX:  Add DATABENTO_API_KEY to .env               │
-│                                                     │
-│  THEN: python3 scripts/run_alpha_backtest.py \      │
-│          --alpha a0_mvp --data <gc.parquet>        │
-│        python3 scripts/run_gate.py trades.csv \     │
-│          --instrument GC --n-trials 1             │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  🟡  CURRENT TASK — two parallel tracks                 │
+│                                                         │
+│  TRACK 1: IB plumbing test (free, immediate)            │
+│  Goal: verify the pipeline runs end-to-end.             │
+│  Result label: PLUMBING CHECK — not an edge verdict.    │
+│                                                         │
+│  pip install -e ".[dev]" && pip install ib_insync       │
+│  cp .env.ib.example .env   # set IB_PORT=7497           │
+│  python3 -c "                                           │
+│    from ag.data.loader import get_loader                │
+│    df = get_loader('ib').load(                          │
+│        'GC','1h',start='2024-01-01',end='2024-12-31')   │
+│    print(df.shape)"                                     │
+│  # → IB max: READ-tier glance only (1 regime, 1 year)  │
+│  # → NOT valid input for the ROBUST gate                │
+│                                                         │
+│  TRACK 2: Databento subscription (gate-grade data)      │
+│  Goal: multi-year multi-regime GC 1m bars for ROBUST.   │
+│  A0_MVP_DECISION.md specifies Databento — not IB.       │
+│                                                         │
+│  Add DATABENTO_API_KEY to .env, then:                   │
+│  python3 -c "                                           │
+│    from ag.data.loader import get_loader                │
+│    df = get_loader('databento').load(                   │
+│        'GC','1m',start='2022-01-01',end='2024-12-31')"  │
+│                                                         │
+│  THEN (after Databento data lands):                     │
+│    scripts/run_alpha_backtest.py --alpha a0_mvp         │
+│    → log every parameter tune in trial_log.py first    │
+│    → each tune = +1 to --n-trials (no exceptions)      │
+│    scripts/run_gate.py trades.csv --instrument GC \     │
+│      --n-trials <honest count from trial_log>           │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -65,22 +88,32 @@ Phase E  Live trading           ░░░░░░░░░░░░░░░░
 | A1SmcMomentum wrapper + audit tracker | ✅ | pipeline + backtest tests |
 | Trial registry (honest --n-trials) | ✅ | `ag/validation/trial_log.py` |
 | Backtest harness | ✅ | `scripts/run_alpha_backtest.py` |
-| Test suite: unit · integration · backtest · e2e | ✅ | **392 / 392 green** |
+| Test suite: unit · integration · backtest · e2e | ✅ | **498 / 498 green** (17 skip pending deps) |
 | CI (GitHub Actions) + branch protection | ✅ | PR required + test check |
 
 ---
 
-## Phase B — Data Layer 🔴 BLOCKED
+## Phase B — Data Layer 🟡 FIRST DOWNLOAD PENDING
 
-> **Unblocks everything downstream. This is the critical path.**
+> **Loaders built. Cache-hit path tested. One TWS session away from real data.**
 
-| Step | Status | Action |
-|------|--------|--------|
-| B0 | 🔴 BLOCKED | Get Databento API key → `DATABENTO_API_KEY` in `.env` |
-| B1 | ⬜ Pending | Build `ag/data/databento/loader.py` — OHLCV 1m+1h GC/MGC/6E, parquet cache |
-| B2 | ⬜ Pending | Continuous-contract roll policy (volume-crossover, back-adjusted) |
-| B3 | ⬜ Pending | `ag/data/databento/integrity.py` — gap / duplicate / session checks |
-| B4 | ⬜ Pending | Offline fixture bundle so CI stays network-free |
+| Step | Status | Notes |
+|------|--------|-------|
+| B0 — IB loader (`IBHistoricalLoader`) | ✅ | Offline-first, CONTFUT, chunked pacing |
+| B0 — Databento loader (`DatabentoLoader`) | ✅ | Offline-first, lazy import, parquet cache |
+| B0 — Source-agnostic factory (`get_loader`) | ✅ | Identical `.load()` API on both — one flag to switch |
+| B0 — CME roll calendar (`roll.py`) | ✅ | `get_front_month()` for GC/MGC/6E |
+| B0 — Integrity checker (`check_ohlcv`) | ✅ | C1–C8, shared across both loaders |
+| B0 — Synthetic fixtures + 99 data tests | ✅ | 82 pass · 17 skip (pyarrow/ib_insync absent) |
+| **B1 — IB plumbing download** | 🟡 **NEXT** | Start TWS → `loader.load("GC","1h",…)` — READ-tier only |
+| B2 — Integrity check on downloaded data | ⬜ | `check_ohlcv(df,"GC","1h")` — auto after download |
+| **B3 — Databento 1m bars (gate-grade)** | 🔴 **BLOCKED** | Needs `DATABENTO_API_KEY`; A0_MVP spec requires Databento |
+
+**Install to unblock the 17 skipped tests:**
+```
+pip install -e ".[dev]"      # pyarrow → parquet roundtrip tests
+pip install -e ".[phase1]"   # ib_insync + databento → download tests
+```
 
 ---
 
@@ -100,11 +133,16 @@ Gate thresholds (locked, immutable):
 ```
  Alpha       Spec     Built    Gated    Verdict
  ─────────────────────────────────────────────────────────────────────────
- A0_MVP      ✅       ✅       ⬜       PENDING  ← run this first
-             (sweep+choch only — minimum viable path to first real verdict)
+ A0_MVP      ✅       ✅       ⬜       PENDING
+             ⚠️  PLUMBING CHECK ONLY — verdict expected FRAGILE
+             sweep+choch → entry = archived SMC_H1_FRAGILE pattern (GC PF 0.698)
+             CLAUDE.md §3: SMC answers WHERE not WHEN; ChoCH→entry is WHEN
+             Valid purpose: confirm pipeline runs; NOT a test of A1 hypothesis
+             BLOCKED ON: Databento 1m data (A0_MVP_DECISION.md spec)
 
  A1          ✅       ✅       ⬜       PENDING
              (full SMC filter: sweep+choch+OB+FVG+displacement)
+             BLOCKED ON: A0_MVP gated first
 
  A2          ✅       ✅       ✅       READ  ⚠️
              n=325 OOS · 10/11 PASS · DSR FAIL (z=−25.32)
@@ -115,27 +153,40 @@ Gate thresholds (locked, immutable):
              (ensemble: 0.4·A1 + 0.3·regime + 0.3·A2 > 0.75)
 ```
 
-### Next actions in Phase C (after B0 unblocked)
+### Next actions in Phase C (after Databento data lands)
 
 ```
- 1. A0_MVP backtest  → scripts/run_alpha_backtest.py --alpha a0_mvp --data <gc.parquet>
- 2. A0_MVP gate      → scripts/run_gate.py trades.csv --instrument GC --n-trials 1
- 3. Check signal rate ≥ 1 trade per 20 bars (if not → lower swing_lookback, new trial)
- 4. If ROBUST → add one filter at a time (each = new alpha ID + new DECISION.md)
- 5. A1 full config gate
- 6. A3 ensemble gate (last)
+ DISCIPLINE: every parameter tune must be logged in trial_log.py BEFORE the run.
+             --n-trials = row count in trial_log.py at gate time. No exceptions.
+             Unlogged experiment = self-deception (CLAUDE.md §7).
+
+ 1. A0_MVP backtest  → scripts/run_alpha_backtest.py --alpha a0_mvp --data <gc_1m.parquet>
+    → A0_MVP is a pipeline smoke test; sweep+choch = archived FRAGILE; expect FRAGILE
+    → If FRAGILE: archive to research_archive/a0_mvp/ — do NOT tune the signal to "fix" it
+    → If signal rate < 1/20 bars: log tune attempt in trial_log.py, lower swing_lookback
+    → Each lookback variant = +1 trial in --n-trials
+
+ 2. A0_MVP gate      → scripts/run_gate.py trades.csv --instrument GC \
+                         --n-trials <count from trial_log.py>
+    → IB 1h data is READ-tier only (1 year, 1 regime) — not valid for ROBUST verdict
+    → Databento multi-year 1m data required for CPCV/WF to be meaningful
+
+ 3. A1 gate (first real edge test — WHERE filter + WHEN trigger, not ChoCH→entry)
+ 4. A3 ensemble gate (last — needs A1 + A2 both gated)
 ```
 
 ---
 
 ## Phase D — Execution Layer 🔒 LOCKED
 
-> **Locked until at least one ROBUST verdict exists. Not started. Not planned.**
+> **Locked until at least one ROBUST verdict exists. IB historical data layer exists (Phase B)
+> but the execution / order-management layer must not be built until the gate passes.**
 
 | Component | Status |
 |-----------|--------|
+| IB historical data (Phase B) | ✅ Built (`ag/data/ib_live/`) |
 | Nautilus Trader integration | 🔒 Locked |
-| Interactive Brokers gateway | 🔒 Locked |
+| IB live order gateway | 🔒 Locked |
 | Order management / retry logic | 🔒 Locked |
 | Live position journal | 🔒 Locked |
 
@@ -167,7 +218,9 @@ Gate thresholds (locked, immutable):
 
 | Gap | Priority |
 |-----|----------|
-| **Databento API key** | 🔴 Critical — blocks everything |
+| **First IB data download** | 🟡 High — unblocks A0_MVP gate |
+| pyarrow not installed | Medium — `pip install -e ".[dev]"` → 17 tests go green |
+| ib_insync not installed | Medium — `pip install -e ".[phase1]"` |
 | CPCV/WF train-side purge scores only OOS | Low — by design |
 | Gate threshold file loader (hardcoded in gate.py) | Low |
 
@@ -176,7 +229,7 @@ Gate thresholds (locked, immutable):
 ## What "done" looks like
 
 ```
-  Phase B complete  →  GC 1m+1h data loads offline, integrity checks pass
+  Phase B complete  →  GC 1m+1h data downloads, integrity checks pass, 498+17 all green
   A0_MVP ROBUST     →  First real gate verdict. A1 filter-by-filter work begins.
   A1 ROBUST         →  A3 ensemble becomes buildable.
   A3 ROBUST         →  30-day dry-run starts. Execution layer build begins.

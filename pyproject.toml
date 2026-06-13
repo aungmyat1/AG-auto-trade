@@ -19,10 +19,12 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
     "python-dotenv>=1.0",
+    "pyarrow>=15.0",     # parquet I/O for cache layer and fixtures
 ]
 phase1 = [
-    # Add when Phase 1 begins: databento, nautilus_trader
-    "ta>=0.11",   # regime classifier
+    "ta>=0.11",          # regime classifier
+    "databento>=0.35",   # CME GLBX.MDP3 downloader — only needed for fresh downloads, not cache reads
+    "ib_insync>=0.9",    # IB TWS/Gateway connector — only needed for fresh IB downloads, not cache reads
 ]
 
 [tool.setuptools.packages.find]
@@ -32,6 +34,7 @@ include = ["ag*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v"
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
