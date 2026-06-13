@@ -1,6 +1,6 @@
 # PROJECT STATE — live memory (read me first, keep me updated)
 
-Last updated: 2026-06-12
+Last updated: 2026-06-12 (Dispatch 5 — test harness expansion)
 
 ## Current Stage
 
@@ -14,6 +14,12 @@ Last updated: 2026-06-12
    infrastructure/ + data/ empty (Phase B)
    - G5 leverage guard: **FIXED** — now a real check (`validate_entry(leverage=1.0)`)
      previously a no-op comment; 5 new tests confirm enforcement
+   - **Test harness expanded** (Dispatch 5, 2026-06-12) — 259 → 392 tests green
+     New coverage: `ag.risk.calculations` pure functions (position sizing, realized P&L,
+     drawdown), circuit-breaker kill-switch patterns, SMC+RiskEngine integration,
+     full trade-session lifecycle, A1 bar-by-bar backtest smoke test, e2e gate battery.
+     New directories: `tests/unit/risk/`, `tests/integration/`, `tests/backtest/`,
+     `tests/e2e/` — structure matches TEST_PLAN.md v1.0.
 3. 🟡 Alpha modules:
    - A2: READ verdict (2026-06-12) — 10/11 criteria, DSR fail z=−25.32
    - A1: spec locked, detectors built, A1SmcMomentum wrapper built (not yet gated)
@@ -42,11 +48,9 @@ Last updated: 2026-06-12
 - 2026-06-12: Phase 1 infra + A1 detectors — suite 209/209 green
 - 2026-06-12 (Dispatch 4): G5 fix + A4 test + A0_MVP/A3 specs + trial registry
   + backtest harness — suite 253/253 green
-- 2026-06-12 (test-plan reconciliation): monitoring tests (15) + offline E2E
-  pipeline test (9: stub alpha → RiskEngine blocking verified → harness → gate;
-  noise ≠ ROBUST safety check) — suite 304/304 green. Uploaded TEST_PLAN parked
-  at `docs/reference/TEST_PLAN.md` with map; its §5.4 gate numbers superseded
-  by locked GATE_DECISION.md
+- 2026-06-12 (Dispatch 5): test harness expansion — suite 392/392 green
+  New: calculations unit tests, kill-switch tests, SMC+risk integration,
+  risk backtest session, A1 smoke backtest, e2e gate battery
 
 ## Known Gaps
 
@@ -61,6 +65,8 @@ Last updated: 2026-06-12
 | ~~Trial registry missing~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
 | ~~A0_MVP spec not locked~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
 | ~~A3 spec not locked~~ | ✅ Closed 2026-06-12 (Dispatch 4) |
+| ~~calculations.py untested (position sizing, P&L, drawdown)~~ | ✅ Closed 2026-06-12 (Dispatch 5) |
+| ~~No integration/backtest/e2e test directories~~ | ✅ Closed 2026-06-12 (Dispatch 5) |
 | Databento data layer | Phase B — BLOCKED on subscription |
 | CPCV/WF train-side purge scores only OOS | By design (no per-fold refit on static series) |
 | Lock-before-look loader missing | Gate thresholds hardcoded in gate.py; loader is the A4 test |
