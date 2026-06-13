@@ -38,27 +38,38 @@ Phase E  Live trading           ░░░░░░░░░░░░░░░░
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  🟡  CURRENT TASK — first IB data download              │
+│  🟡  CURRENT TASK — two parallel tracks                 │
 │                                                         │
-│  Data layer is built. One step away from real data.     │
+│  TRACK 1: IB plumbing test (free, immediate)            │
+│  Goal: verify the pipeline runs end-to-end.             │
+│  Result label: PLUMBING CHECK — not an edge verdict.    │
 │                                                         │
-│  1. pip install -e ".[dev]" && pip install ib_insync    │
-│  2. Start TWS or IB Gateway (paper account fine)        │
-│  3. Copy .env.ib.example → .env, set IB_PORT            │
-│  4. Pull first bars:                                    │
-│       from ag.data.loader import get_loader             │
-│       loader = get_loader("ib")                         │
-│       df = loader.load("GC","1h",                       │
-│              start="2024-01-01",end="2024-12-31")        │
+│  pip install -e ".[dev]" && pip install ib_insync       │
+│  cp .env.ib.example .env   # set IB_PORT=7497           │
+│  python3 -c "                                           │
+│    from ag.data.loader import get_loader                │
+│    df = get_loader('ib').load(                          │
+│        'GC','1h',start='2024-01-01',end='2024-12-31')   │
+│    print(df.shape)"                                     │
+│  # → IB max: READ-tier glance only (1 regime, 1 year)  │
+│  # → NOT valid input for the ROBUST gate                │
 │                                                         │
-│  THEN: run A0_MVP backtest → gate                       │
+│  TRACK 2: Databento subscription (gate-grade data)      │
+│  Goal: multi-year multi-regime GC 1m bars for ROBUST.   │
+│  A0_MVP_DECISION.md specifies Databento — not IB.       │
+│                                                         │
+│  Add DATABENTO_API_KEY to .env, then:                   │
+│  python3 -c "                                           │
+│    from ag.data.loader import get_loader                │
+│    df = get_loader('databento').load(                   │
+│        'GC','1m',start='2022-01-01',end='2024-12-31')"  │
+│                                                         │
+│  THEN (after Databento data lands):                     │
 │    scripts/run_alpha_backtest.py --alpha a0_mvp         │
+│    → log every parameter tune in trial_log.py first    │
+│    → each tune = +1 to --n-trials (no exceptions)      │
 │    scripts/run_gate.py trades.csv --instrument GC \     │
-│      --n-trials 1                                       │
-│                                                         │
-│  Databento upgrade path (when deeper history needed):   │
-│    Add DATABENTO_API_KEY to .env                        │
-│    Switch get_loader("databento") — same alpha code     │
+│      --n-trials <honest count from trial_log>           │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -94,9 +105,9 @@ Phase E  Live trading           ░░░░░░░░░░░░░░░░
 | B0 — CME roll calendar (`roll.py`) | ✅ | `get_front_month()` for GC/MGC/6E |
 | B0 — Integrity checker (`check_ohlcv`) | ✅ | C1–C8, shared across both loaders |
 | B0 — Synthetic fixtures + 99 data tests | ✅ | 82 pass · 17 skip (pyarrow/ib_insync absent) |
-| **B1 — First real download** | 🟡 **NEXT** | Start TWS → `loader.load("GC","1h",start=…)` |
-| B2 — Integrity check on live data | ⬜ | `check_ohlcv(df,"GC","1h")` — auto after download |
-| B3 — Pull 1m bars for A0_MVP backtest | ⬜ | ~180D chunks, loader handles pacing |
+| **B1 — IB plumbing download** | 🟡 **NEXT** | Start TWS → `loader.load("GC","1h",…)` — READ-tier only |
+| B2 — Integrity check on downloaded data | ⬜ | `check_ohlcv(df,"GC","1h")` — auto after download |
+| **B3 — Databento 1m bars (gate-grade)** | 🔴 **BLOCKED** | Needs `DATABENTO_API_KEY`; A0_MVP spec requires Databento |
 
 **Install to unblock the 17 skipped tests:**
 ```
@@ -122,9 +133,12 @@ Gate thresholds (locked, immutable):
 ```
  Alpha       Spec     Built    Gated    Verdict
  ─────────────────────────────────────────────────────────────────────────
- A0_MVP      ✅       ✅       ⬜       PENDING  ← run this first
-             (sweep+choch only — minimum viable path to first real verdict)
-             BLOCKED ON: real GC 1m data
+ A0_MVP      ✅       ✅       ⬜       PENDING
+             ⚠️  PLUMBING CHECK ONLY — verdict expected FRAGILE
+             sweep+choch → entry = archived SMC_H1_FRAGILE pattern (GC PF 0.698)
+             CLAUDE.md §3: SMC answers WHERE not WHEN; ChoCH→entry is WHEN
+             Valid purpose: confirm pipeline runs; NOT a test of A1 hypothesis
+             BLOCKED ON: Databento 1m data (A0_MVP_DECISION.md spec)
 
  A1          ✅       ✅       ⬜       PENDING
              (full SMC filter: sweep+choch+OB+FVG+displacement)
@@ -139,15 +153,26 @@ Gate thresholds (locked, immutable):
              (ensemble: 0.4·A1 + 0.3·regime + 0.3·A2 > 0.75)
 ```
 
-### Next actions in Phase C (after first data download)
+### Next actions in Phase C (after Databento data lands)
 
 ```
+ DISCIPLINE: every parameter tune must be logged in trial_log.py BEFORE the run.
+             --n-trials = row count in trial_log.py at gate time. No exceptions.
+             Unlogged experiment = self-deception (CLAUDE.md §7).
+
  1. A0_MVP backtest  → scripts/run_alpha_backtest.py --alpha a0_mvp --data <gc_1m.parquet>
- 2. Check signal rate ≥ 1 trade per 20 bars (if not → lower swing_lookback, new trial)
- 3. A0_MVP gate      → scripts/run_gate.py trades.csv --instrument GC --n-trials 1
- 4. If ROBUST → add one filter at a time (each = new alpha ID + new DECISION.md)
- 5. A1 full config gate
- 6. A3 ensemble gate (last)
+    → A0_MVP is a pipeline smoke test; sweep+choch = archived FRAGILE; expect FRAGILE
+    → If FRAGILE: archive to research_archive/a0_mvp/ — do NOT tune the signal to "fix" it
+    → If signal rate < 1/20 bars: log tune attempt in trial_log.py, lower swing_lookback
+    → Each lookback variant = +1 trial in --n-trials
+
+ 2. A0_MVP gate      → scripts/run_gate.py trades.csv --instrument GC \
+                         --n-trials <count from trial_log.py>
+    → IB 1h data is READ-tier only (1 year, 1 regime) — not valid for ROBUST verdict
+    → Databento multi-year 1m data required for CPCV/WF to be meaningful
+
+ 3. A1 gate (first real edge test — WHERE filter + WHEN trigger, not ChoCH→entry)
+ 4. A3 ensemble gate (last — needs A1 + A2 both gated)
 ```
 
 ---
