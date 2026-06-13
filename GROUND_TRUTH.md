@@ -15,16 +15,17 @@
 
 ## Alpha Verdicts
 
-| Alpha | Status       | Notes |
-|-------|-------------|-------|
-| A1    | NOT TESTED  | SMC-filter + momentum/delta |
-| A2    | NOT TESTED  | Master-trader copy (SignalStart) |
-| A3    | NOT TESTED  | Ensemble |
+| Alpha  | Status              | Verdict              | Notes |
+|--------|---------------------|----------------------|-------|
+| A0_MVP | NOT TESTED          | PENDING              | Sweep+ChoCH only Phase B MVP; spec locked `A0_MVP_DECISION.md` |
+| A1     | NOT TESTED          | PENDING              | SMC-filter + momentum/delta; spec locked |
+| A2     | TESTED 2026-06-12   | READ (OPTIMISTIC)    | n=325 OOS, net PF=3.745, 10/11 pass, DSR z=−25.32 |
+| A3     | NOT TESTED          | PENDING              | Ensemble; spec locked + skeleton built |
 
 ## Build Order (v4)
 
 1. Validation core (plain Python, zero engine dependency) ✅ 2026-06-12
-2. Platform (risk, regime, monitoring, infrastructure) 🟡 2026-06-12 (risk/regime tests owed; monitoring = Telegram stub; infrastructure/ + data/ empty)
-3. Alpha modules (A1, A2, A3 to common generate_signal() interface) ← CURRENT
+2. Platform (risk, regime, monitoring, infrastructure) ✅ 2026-06-13 (G5 fixed; 392 tests green; env loader; monitoring = Telegram stub; data/ empty pending Phase B)
+3. Alpha modules (A1, A2, A3 to common AlphaModule interface) ← CURRENT
 4. Gate race (A1 vs A2 vs A3 — cloud MAIN, compute-heavy)
 5. Execution (Nautilus L3 + IB) — only if a ROBUST alpha exists

@@ -34,7 +34,7 @@ SMC answers WHERE; momentum/delta answers WHEN. SMC never generates entries.
 
 ```bash
 cd ag-auto-trade
-.venv/bin/python3 -m pytest tests/ -q              # 259 tests, all green
+.venv/bin/python3 -m pytest tests/ -q              # 392 tests, all green
 .venv/bin/python3 scripts/run_gate.py --help       # gate CLI
 .venv/bin/python3 scripts/run_signal_audit.py --help  # SMC funnel audit
 .venv/bin/python3 scripts/run_alpha_backtest.py --alpha a0_mvp --synthetic  # smoke test
