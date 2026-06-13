@@ -34,6 +34,7 @@ include = ["ag*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v"
+pythonpath = ["."]
 
 [tool.ruff]
 line-length = 100
