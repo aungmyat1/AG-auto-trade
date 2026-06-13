@@ -1,4 +1,35 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git rev-parse*)",
+      "Bash(git remote*)",
+      "Bash(git ls-files*)",
+      "Bash(ls*)",
+      "Bash(find . *)",
+      "Bash(cat*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(grep*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git commit*)",
+      "Bash(git merge*)",
+      "Bash(git rebase*)",
+      "Bash(git reset*)",
+      "Bash(git checkout*)",
+      "Bash(pip install*)",
+      "Bash(sudo*)",
+      "Bash(ssh*)",
+      "Bash(docker compose*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
