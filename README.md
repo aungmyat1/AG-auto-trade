@@ -6,8 +6,11 @@ Validation-first futures trading system. The gate is the asset; strategy is a ca
 
 1. ✅ Validation core — plain Python, zero engine dependency
 2. ✅ Risk engine (6 sequential guards) + regime classifier (4 regimes)
-3. 🟡 Alpha modules: A1 detectors + wrapper built (not yet gated) · A2 READ verdict · A3 skeleton + spec locked
-4. ⬜ Gate race: all three through identical gate (blocked: Databento data)
+3. 🟡 Alpha modules:
+   - A1_WHERE_ONLY: UNSCOREABLE (n=33<50, GC 1h 5yr) — full A1 §1 (WHERE+WHEN) NOT BUILT, spec locked for fresh window
+   - A2: READ verdict (10/11 criteria, DSR fail z=−25.32) — carries the gate race
+   - A3: spec locked, skeleton built, not yet gated
+4. 🟡 Gate race: GC + 6E data cached; A2 is active candidate per Rule 2
 5. ⬜ Execution (Nautilus + IB) — only if a ROBUST alpha exists
 
 ## Instruments
@@ -34,7 +37,7 @@ SMC answers WHERE; momentum/delta answers WHEN. SMC never generates entries.
 
 ```bash
 cd ag-auto-trade
-.venv/bin/python3 -m pytest tests/ -q              # 392 tests, all green
+.venv/bin/python3 -m pytest tests/ -q              # 608 tests, all green
 .venv/bin/python3 scripts/run_gate.py --help       # gate CLI
 .venv/bin/python3 scripts/run_signal_audit.py --help  # SMC funnel audit
 .venv/bin/python3 scripts/run_alpha_backtest.py --alpha a0_mvp --synthetic  # smoke test
