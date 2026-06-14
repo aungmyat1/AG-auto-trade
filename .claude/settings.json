@@ -23,12 +23,12 @@
       "Bash(gh pr create*)",
       "Bash(gh pr list*)",
       "Bash(gh pr view*)",
-      "Bash(git merge*)"
+      "Bash(git merge*)",
+      "Bash(pip install pybit*)"
     ],
     "deny": [
       "Bash(git rebase*)",
       "Bash(git reset*)",
-      "Bash(pip install*)",
       "Bash(sudo*)",
       "Bash(ssh*)",
       "Bash(docker compose*)"
