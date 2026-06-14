@@ -13,12 +13,6 @@ from ._smc_cases import DETECT_FNS, IDS
 
 SPLITS = [120, 180, 240]
 
-# The four detectors that are look-ahead-clean. `liquidity` is excluded here and
-# pinned separately below as a documented known defect (LF-1).
-CLEAN = [(n, f) for n, f in DETECT_FNS if n != "liquidity"]
-CLEAN_IDS = [n for n, _ in CLEAN]
-_LIQUIDITY_DETECT = dict(DETECT_FNS)["liquidity"]
-
 
 @pytest.mark.parametrize("name,detect", DETECT_FNS, ids=IDS)
 def test_detector_finds_something(name, detect, structured_df):
@@ -26,28 +20,14 @@ def test_detector_finds_something(name, detect, structured_df):
     assert len(detect(structured_df)) >= 1
 
 
-@pytest.mark.parametrize("name,detect", CLEAN, ids=CLEAN_IDS)
+@pytest.mark.parametrize("name,detect", DETECT_FNS, ids=IDS)
 @pytest.mark.parametrize("split", SPLITS)
 def test_no_future_leakage(name, detect, split, structured_df):
+    # All five detectors must be look-ahead-clean. (liquidity's LF-1 future-cluster
+    # leak was fixed: it now clusters only with past swings — see liquidity.py.)
     assert future_leak_free(detect, structured_df, split), (
         f"{name}: poisoning bars after {split} changed past detections — look-ahead bias"
     )
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "LF-1 — LiquidityDetector look-ahead: it keeps a past swing as a liquidity "
-        "level only if it clusters with another equal-high drawn from the WHOLE series, "
-        "including FUTURE swings (liquidity.py:50-55). Poisoning the future makes a past "
-        "pool appear/vanish. Fix: tag the level at its confirmation bar (latest swing in "
-        "the cluster) and/or cluster only with bars already seen. Tracked for owner review; "
-        "A1 code is not changed during the freeze. When fixed, this test will XPASS and "
-        "strict=True will flag it to be un-xfailed."
-    ),
-)
-def test_liquidity_lookahead_known_defect_LF1(structured_df):
-    assert future_leak_free(_LIQUIDITY_DETECT, structured_df, 180)
 
 
 def test_poison_future_leaves_past_bars_untouched(structured_df):

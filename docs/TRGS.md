@@ -42,12 +42,15 @@ pre-registered locked decisions:
 
 ## Status today
 
-Running it now returns **BLOCKED**, for real reasons:
-- `replay` **FAIL** — it catches **LF-1**, the live look-ahead in `LiquidityDetector`
-  (a past liquidity pool that depends on future bars). This is the firewall doing its
-  job on day one.
-- `backtest` NOT_RUN — no ROBUST verdict exists (no real data yet).
+Running it now returns **READY_FOR_BACKTEST** — the harness is *verified* (replay clean
+after the LF-1 fix, all six risk guards fire) but it is NOT cleared for capital:
+- `replay` **PASS** — all five SMC detectors are look-ahead- and repaint-clean (LF-1, the
+  liquidity future-cluster look-ahead, was found by this suite and is now fixed).
+- `backtest` NOT_RUN — no ROBUST verdict exists (no real GC data yet).
+- `edge` NOT_RUN — no alpha-vs-baseline comparison yet.
 - `system_health` / `infra` NOT_AVAILABLE — execution layer locked.
 
-The firewall will keep saying NO until LF-1 is fixed, a strategy earns ROBUST on real
-GC data, and (for live) the execution layer is built and the owner flips the switch.
+The firewall now says "your validation harness is trustworthy — go get a verdict," and it
+will refuse LIVE until a strategy earns ROBUST on real GC data, the execution layer is
+built, and the owner flips the switch. (Earlier it returned BLOCKED because the replay gate
+caught LF-1 — that was the firewall working; the bug is now fixed.)

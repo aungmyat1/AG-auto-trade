@@ -47,36 +47,46 @@ class LiquidityDetector:
         seen_high: set = set()
         seen_low: set = set()
 
-        # Equal highs → sell-side liquidity above price
+        # Equal highs → sell-side liquidity above price.
+        # CAUSAL (fix LF-1): a pool is only KNOWN once a *second* equal high prints.
+        # Cluster ONLY with earlier swings and report the level at the confirming
+        # (later) swing — never retroactively via a future high. Clustering against
+        # future swings made a past pool appear/vanish with future bars (look-ahead).
         for idx in sh_indices:
             if idx in seen_high:
                 continue
             atr_val = atr.iloc[idx] or 1.0
-            cluster = [
+            past_equal = [
                 j for j in sh_indices
-                if j != idx and abs(highs[j] - highs[idx]) < self.cluster_atr_mult * atr_val
+                if j < idx and abs(highs[j] - highs[idx]) < self.cluster_atr_mult * atr_val
             ]
-            if not cluster:
+            if not past_equal:
+                continue
+            if any(j in seen_high for j in past_equal):
+                seen_high.add(idx)   # re-touch of a known pool — absorb, don't re-emit
                 continue
             seen_high.add(idx)
-            seen_high.update(cluster)
+            seen_high.update(past_equal)
             liq = LiquidityLevel(direction="high", price=highs[idx], bar_index=idx)
             liq = _check_sweep_high(liq, highs, closes, len(df))
             levels.append(liq)
 
-        # Equal lows → buy-side liquidity below price
+        # Equal lows → buy-side liquidity below price (same causal rule as highs).
         for idx in sl_indices:
             if idx in seen_low:
                 continue
             atr_val = atr.iloc[idx] or 1.0
-            cluster = [
+            past_equal = [
                 j for j in sl_indices
-                if j != idx and abs(lows[j] - lows[idx]) < self.cluster_atr_mult * atr_val
+                if j < idx and abs(lows[j] - lows[idx]) < self.cluster_atr_mult * atr_val
             ]
-            if not cluster:
+            if not past_equal:
+                continue
+            if any(j in seen_low for j in past_equal):
+                seen_low.add(idx)   # re-touch of a known pool — absorb, don't re-emit
                 continue
             seen_low.add(idx)
-            seen_low.update(cluster)
+            seen_low.update(past_equal)
             liq = LiquidityLevel(direction="low", price=lows[idx], bar_index=idx)
             liq = _check_sweep_low(liq, lows, closes, len(df))
             levels.append(liq)

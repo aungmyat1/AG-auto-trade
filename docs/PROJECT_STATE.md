@@ -71,6 +71,12 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
   **FINDING LF-1**: LiquidityDetector still has a future-cluster look-ahead (liquidity.py:50-55)
   that PR #14's prefix-lag tests MISS — caught only by future-poisoning. C3 tz test made
   environment-portable. Added `docs/REALISTIC_OUTCOME.md` + `docs/SUCCESS_CRITERIA.md`.
+- 2026-06-14: **LF-1 FIXED** — LiquidityDetector clusters past-only and dates the pool at the
+  confirming swing (was: clustered with future equal-highs). 9/9 liquidity unit tests still pass,
+  still finds 9 pools; `future_leak_free`/`repaint_free` green; /smc-review PASS. Replay suite
+  xfail removed. Added Trading Readiness Gate System (TRGS, `ag/readiness/`) — composes the locked
+  gate/risk/replay into one fail-closed capital-deployment decision (562→ tests). Running it now
+  returns READY_FOR_BACKTEST (harness verified; no ROBUST verdict; no execution layer); never live.
 
 ## Known Gaps
 
@@ -98,8 +104,8 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
 | **[AUDIT S1]** FRAGILE header missing from SMC detector files | Add to `detectors/{liquidity,order_block,fvg,bos_choch}.py` + `pipeline.py` — P1 |
 | **[AUDIT S9]** `_active_obs` list unbounded | Cap at 50 in `a1_alpha.py:77` — P2 |
 | **[AUDIT S8]** No `TRIALS.md` parameter ledger | Create `ag/alpha/a1_smc_momentum/TRIALS.md` — P3 |
-| **[AUDIT S6]** No look-ahead regression tests for SMC detectors | Partly closed — `tests/replay/` future-poisoning + repaint suite added |
-| **LF-1** LiquidityDetector future-cluster look-ahead (real, on main) | Pinned by `tests/replay/` xfail. Fix = tag level at confirmation bar (latest swing in cluster). Owner decision — touches A1 during freeze. PR #14's prefix-lag tests miss it. |
+| ~~**[AUDIT S6]** No look-ahead regression tests for SMC detectors~~ | ✅ Closed 2026-06-14 — `tests/replay/` future-poisoning + repaint suite covers all 5 detectors |
+| ~~**LF-1** LiquidityDetector future-cluster look-ahead~~ | ✅ Closed 2026-06-14 — past-only clustering, level dated at confirming swing; `future_leak_free` green; /smc-review PASS |
 | **[AUDIT R7-R9]** No unit tests for cpcv/walk_forward/monte_carlo/a1_alpha.propose()/historical | Deferred until post-verdict |
 
 ## Next Goal

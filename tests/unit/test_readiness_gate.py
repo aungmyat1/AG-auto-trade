@@ -116,23 +116,23 @@ class TestValidators:
         assert edge_validator(None, base).status == NR
 
 
-# ── replay validator catches the real LF-1 bug ────────────────────────────────
+# ── replay validator is clean now that LF-1 is fixed ──────────────────────────
 
-class TestReplayCatchesLF1:
-    def test_replay_validator_fails_on_live_smc_detectors(self):
+class TestReplayValidatorClean:
+    def test_replay_validator_passes_on_live_smc_detectors(self):
         df = make_structured_ohlcv()
         res = replay_validator(DETECT_FNS, df)
-        # LF-1: the LiquidityDetector leaks the future → replay must FAIL.
-        assert res.status == FAIL
-        assert "liquidity" in res.evidence["lookahead"]
+        # LF-1 fixed → all five detectors are look-ahead- and repaint-clean.
+        assert res.status == PASS, res.detail
 
 
-# ── end-to-end: the firewall blocks today ─────────────────────────────────────
+# ── end-to-end: firewall awaits a verdict (no longer blocked on LF-1) ──────────
 
-class TestEndToEndBlockedToday:
-    def test_evaluate_readiness_is_blocked_now(self):
+class TestEndToEndAwaitsVerdict:
+    def test_evaluate_readiness_is_ready_for_backtest(self):
         df = make_structured_ohlcv()
         rep = evaluate_readiness(detect_fns=DETECT_FNS, df=df, manual_override=True)
-        # No ROBUST verdict, no execution layer, and replay catches LF-1 → BLOCKED.
-        assert rep.state == ReadinessState.BLOCKED
+        # Harness verified (replay clean + risk guards fire) but no ROBUST verdict
+        # and no execution layer → READY_FOR_BACKTEST. Never live.
+        assert rep.state == ReadinessState.READY_FOR_BACKTEST
         assert rep.can_trade_live is False
