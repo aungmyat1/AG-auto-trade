@@ -17,7 +17,7 @@
 
 | Alpha  | Status              | Verdict              | Notes |
 |--------|---------------------|----------------------|-------|
-| A0_MVP | NOT TESTED          | PENDING              | Sweep+ChoCH only Phase B MVP; spec locked `A0_MVP_DECISION.md` |
+| A0_MVP | TESTED 2026-06-14   | FRAGILE              | 38 trades < n≥50 floor; sweep+ChoCH plumbing check; gate skipped; archived `research_archive/a0_mvp/` |
 | A1     | NOT TESTED          | PENDING              | SMC-filter + momentum/delta; spec locked |
 | A2     | TESTED 2026-06-12   | READ (OPTIMISTIC)    | n=325 OOS, net PF=3.745, 10/11 pass, DSR z=−25.32 |
 | A3     | NOT TESTED          | PENDING              | Ensemble; spec locked + skeleton built |
