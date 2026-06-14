@@ -1,5 +1,12 @@
 # DISPATCH — A1 5-year gate run (GC · MGC · 6E)
 
+> ⚠️ **SUPERSEDED (2026-06-14 spec↔code audit).** `--alpha a1` builds the **WHERE-only**
+> alpha (no WHEN), now registered as **A1_WHERE_ONLY** — and it has already been run:
+> GC 5yr n=33<50 → **UNSCOREABLE** (`A1_WHERE_ONLY_DECISION.md`). The full-A1 this dispatch
+> was written for is **NOT BUILT**. Do not re-run as-is. Next step is the owner decision in
+> `PROJECT_STATE.md` (archive A1_WHERE_ONLY → A2, or build full-A1 and gate on a fresh window).
+> Steps below are retained for the MGC/6E mechanics only.
+
 **Target:** VPS WORKER (holds the Databento key; the only tier that may pull paid data).
 **From:** Cloud MAIN (no keys; cannot pull data or trade — GROUND_TRUTH #5).
 **Committed:** 2026-06-14. Read against `ag/validation/lock_before_look/A1_VERDICT_RULE.md` (locked).
