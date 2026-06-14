@@ -2,6 +2,12 @@
 
 A displacement candle has a body >= atr_mult * ATR(atr_window),
 signalling institutional momentum.  Default: body >= 1.8 * ATR(20).
+
+# ⚠️  FRAGILE — part of the SMC library, which has no standalone edge on GC H1
+# (see research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md).
+# Displacement is a momentum / WHEN-trigger component (a body >= atr_mult*ATR vote),
+# NOT an entry signal. It never emits a trade alone — entries go through
+# AlphaModule.propose() under the non-bypassable risk engine.
 """
 from __future__ import annotations
 
