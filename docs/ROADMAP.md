@@ -1,12 +1,5 @@
 # AG Auto-Trade — Live Roadmap
 > Last synced: 2026-06-14 · Source of truth: `docs/PROJECT_STATE.md`
->
-> Two views of the same journey:
-> • **Build phases (A–E)** — what gets built, in locked order.
-> • **Verification ladder (PHASE 0–11)** — how each layer is *proven* before it earns live capital.
-> The ladder is adopted from the owner's verification framework (2026-06-14) and reconciled
-> with the locked decisions in `GROUND_TRUTH.md` / `GATE_DECISION.md`. Where the framework and
-> the locked rules disagree, **the locked rules win** — see "Reconciliation" below.
 
 ---
 
@@ -19,33 +12,90 @@
  │  ┌──────────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐       │
  │  │     DATA     │───▶│  ALPHA   │───▶│   RISK   │───▶│ EXECUTE  │       │
  │  │  IB (MVP)    │    │ propose()│    │ validate │    │  IB/Naut │       │
- │  │  Databento ↑ │    │  (WHERE  │    │ 6 guards │    │          │       │
- │  └──────────────┘    │  +WHEN)  │    └──────────┘    └──────────┘       │
- │                      └──────────┘                                        │
+ │  │  Databento ↑ │    │          │    │          │    │          │       │
+ │  └──────────────┘    └──────────┘    └──────────┘    └──────────┘       │
  │     🟡 B  ←  first download pending    ✅ done          🔒 D/E           │
  │                                                                           │
  │  ◀────────── GATE required before execution layer may be built ─────────▶│
  └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-SMC sits inside ALPHA as the **WHERE** filter only — it never emits an entry by itself
-(`GROUND_TRUTH.md` §3). A momentum/delta trigger decides **WHEN**. The risk engine, not the
-strategy, decides size and whether the trade is allowed.
+---
+
+## Phase Progress
+
+```
+Phase A  Platform hardening     ████████████████████  100%  ✅ DONE  (audit 2026-06-14: PASS)
+Phase B  Data layer             ████████████████████   90%  🟡 DATABENTO KEY NEEDED
+Phase C  Alpha gate race        ████░░░░░░░░░░░░░░░░   20%  🟡 WAITING ON DATA
+Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
+Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
+```
 
 ---
 
-## Phase Progress (build view)
+## Standing Rules (locked — do not relax without owner approval)
+
+### Rule 1 — First Verdict Rule
+
+The project SHALL NOT introduce new trading infrastructure, exchanges, execution venues,
+alpha frameworks, AI layers, master-trader systems, or instrument universes before the
+first registered gate verdict is produced on real market data.
+
+**Allowed before first verdict:** data acquisition · integrity validation · bug fixes ·
+test maintenance · A0_MVP execution · gate execution · documentation updates.
+
+**Not allowed before first verdict:** new alphas · new exchanges · new copy-trading systems ·
+new SMC variants · new master-trader intelligence · new instruments.
+
+The purpose: prevent scope expansion before evidence exists.
+
+### Rule 2 — Instrument Escalation Path
+
+Primary research instruments: **GC · MGC · 6E** (CME futures).
+
+These remain the only approved research universe until a real gate verdict exists.
+
+If A0_MVP and subsequent alphas fail to achieve ROBUST on the primary universe,
+the next approved expansion path is:
+
+1. BTCUSD
+2. ETHUSD
+
+Objective: faster hypothesis testing and higher signal frequency — not replacement of
+the primary universe. No BTC/ETH infrastructure work begins before the first real verdict
+on the primary universe unless explicitly approved by the owner.
+
+---
+
+## 🧊 DEVELOPMENT FREEZE — active until first verdict is reviewed
+
+**The 7-step sequence to first verdict (clock starts when Databento key lands):**
 
 ```
-Phase A  Platform hardening     ████████████████████  100%  ✅ DONE
-Phase B  Data layer             ████████████████░░░░   80%  🟡 FIRST DOWNLOAD PENDING
-Phase C  Alpha gate race        ████░░░░░░░░░░░░░░░░   20%  🟡 WAITING ON DATA
-Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED (needs ROBUST)
-Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED (owner-only flip)
+1. ✅ Preflight audit     DONE 2026-06-14 — 2 pipeline bugs fixed, audit clean
+                          docs/audits/REPO_AUDIT_2026-06-14.md
+                          Open items (non-blocking): FRAGILE headers, _active_obs cap,
+                          TRIALS.md, look-ahead regression tests
+2. ⬅️ Acquire Databento   Owner action — add DATABENTO_API_KEY to .env  ← YOU ARE HERE
+3. ⬜ Download GC data    get_loader("databento").load("GC","1m","2022-01-01","2024-12-31")
+4. ⬜ Run A0_MVP          scripts/run_alpha_backtest.py --alpha a0_mvp --data <file>
+5. ⬜ Run gate            scripts/run_gate.py trades.csv --instrument GC --n-trials <N>
+6. ⬜ Record verdict      FRAGILE → research_archive/a0_mvp/   READ/ROBUST → PROJECT_STATE.md
+7. ⬜ FREEZE & REVIEW     Owner reviews the verdict before ANY further build.
 ```
 
-Deployment state: **`NOT_READY`** → `READY_FOR_PAPER` → `READY_FOR_SHADOW` →
-`READY_FOR_LIVE_PILOT` → `READY_FOR_SCALE`. No state may be skipped.
+**Do NOT start before step 7 is complete:**
+
+| Item | Why frozen |
+|---|---|
+| BTC/ETH expansion | Rule 2 — no BTC/ETH work before first GC/6E verdict |
+| New SMC filters | Rule 1 — A0_MVP must be gated first; each filter = new alpha ID |
+| Master-trader selector enhancements | Rule 1 — A2 is READ; no tuning before gate race |
+| Copy-trading optimizer | Rule 1 — no new systems before first verdict |
+| AI signal ranking | Rule 1 — validation before optimization (CLAUDE.md §7) |
+
+**The freeze is active now.** Step 1 ✅ done. Step 2 (Databento key) is the only unblocked action.
 
 ---
 
@@ -53,129 +103,42 @@ Deployment state: **`NOT_READY`** → `READY_FOR_PAPER` → `READY_FOR_SHADOW` �
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  🟡  CURRENT TASK — two parallel tracks                 │
+│  🧊  FREEZE ACTIVE — waiting on DATABENTO_API_KEY       │
 │                                                         │
-│  TRACK 1: IB plumbing test (free, immediate)            │
-│  Goal: verify the pipeline runs end-to-end.             │
-│  Result label: PLUMBING CHECK — not an edge verdict.    │
+│  ✅ Preflight audit complete (2026-06-14)               │
+│     Pipeline bugs fixed:                                │
+│       - Backtest wrote rejected signals to gate CSV     │
+│         → now writes only approved trades, col=pnl_r   │
+│       - run_gate.py lacked sys.path → now self-contained│
+│     Audit open items (fix before gate, not blocking):   │
+│       - FRAGILE header missing from detector files [S1] │
+│       - _active_obs unbounded growth [S9]               │
+│       - TRIALS.md parameter ledger missing [S8]         │
+│       - No look-ahead regression tests [S6]             │
 │                                                         │
-│  pip install -e ".[dev]" && pip install ib_insync       │
-│  cp .env.ib.example .env   # set IB_PORT=7497           │
-│  python3 -c "                                           │
-│    from ag.data.loader import get_loader                │
-│    df = get_loader('ib').load(                          │
-│        'GC','1h',start='2024-01-01',end='2024-12-31')   │
-│    print(df.shape)"                                     │
-│  # → IB max: READ-tier glance only (1 regime, 1 year)  │
-│  # → NOT valid input for the ROBUST gate                │
+│  ⬅️  SINGLE UNBLOCKED ACTION: add Databento key to .env │
 │                                                         │
-│  TRACK 2: Databento subscription (gate-grade data)      │
-│  Goal: multi-year multi-regime GC 1m bars for ROBUST.   │
-│  A0_MVP_DECISION.md specifies Databento — not IB.       │
+│  echo "DATABENTO_API_KEY=<key>" >> .env                 │
 │                                                         │
-│  Add DATABENTO_API_KEY to .env, then:                   │
+│  Then (~1 hour to first verdict):                       │
+│  pip install -e ".[phase1]"                             │
 │  python3 -c "                                           │
 │    from ag.data.loader import get_loader                │
 │    df = get_loader('databento').load(                   │
-│        'GC','1m',start='2022-01-01',end='2024-12-31')"  │
+│        'GC','1m',start='2022-01-01',end='2024-12-31')" │
+│  scripts/run_alpha_backtest.py --alpha a0_mvp \         │
+│      --data <gc_1m.parquet> --instrument GC             │
+│  scripts/run_gate.py trades.csv \                       │
+│      --instrument GC --n-trials 1                       │
 │                                                         │
-│  THEN (after Databento data lands):                     │
-│    scripts/run_alpha_backtest.py --alpha a0_mvp         │
-│    → log every parameter tune in trial_log.py first    │
-│    scripts/run_gate.py trades.csv --instrument GC \     │
-│      --n-trials <honest count from trial_log>           │
+│  Expected verdict: FRAGILE (sweep+choch = known fail)   │
+│  That is still a valid, useful result.                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🧊 DEVELOPMENT FREEZE — until the first gate verdict exists
-
-> One verified verdict is worth more than five unverified features.
-> The gate is the asset; everything else is a candidate waiting its turn.
-
-**Next 72 hours, in order — nothing runs in parallel:**
-
-```
- 1. Preflight audit        /audit-repo  +  /smc-review (no lookahead, no repainting)
- 2. Acquire Databento      set DATABENTO_API_KEY  (gate-grade GC 1m; A0_MVP spec requires it)
- 3. Download GC data       get_loader("databento").load("GC","1m", multi-year)
- 4. Run A0_MVP             scripts/run_alpha_backtest.py --alpha a0_mvp   (log trials first)
- 5. Run the gate           scripts/run_gate.py trades.csv --instrument GC --n-trials <honest>
- 6. Record the verdict     VALIDATION_STATUS.md + PROJECT_STATE.md;  FRAGILE → research_archive/
- 7. FREEZE & REVIEW        stop. Owner reviews the verdict before ANY further build.
-```
-
-**Do NOT start until a first gate verdict exists (and is reviewed):**
-
-```
- ✗ BTC / ETH expansion              crypto line is CLOSED (FRAGILE/FAIL archived) — not "later"
- ✗ master-trader selector work      A2 is READ; no selector optimization before the race
- ✗ copy-trading optimizer           validation before optimization (GROUND_TRUTH §7)
- ✗ new SMC modules / filters        add only AFTER A0_MVP/A1 are gated — one at a time
- ✗ AI signal ranking                no pre-gate optimization/ranking layer
-```
-
-Why freeze: every unlogged experiment inflates the real `--n-trials` and erodes the Deflated-Sharpe
-honesty the whole system depends on. Build breadth *after* the first verdict tells us the floor is real.
-
----
-
-## Verification Ladder (PHASE 0–11) — path to live
-
-Adopted from the owner's 2026-06-14 framework. Each rung must PASS before the next is attempted;
-a failure routes back through the **Master Correction Loop** (bottom). The ladder maps onto the
-build phases and the locked gate — it does **not** replace them.
-
-| # | Verification phase | Maps to | Status | Exit criterion (reconciled) |
-|---|--------------------|---------|--------|------------------------------|
-| 0 | Architecture audit | Phase A · `/audit-repo` | ✅ | Implementation matches `GROUND_TRUTH.md`; risk engine non-bypassable; no alpha calls a broker; journal/kill-switch exist (kill-switch = Phase D, locked) |
-| 1 | Code quality | CI | 🟡 | `ruff` clean (10 nits open) · **add `mypy`, `bandit`, `pip-audit` to CI** (not yet wired) · 0 high security findings |
-| 2 | Component testing | Phase A | ✅ | SMC detectors + risk + regime unit-tested; coverage target ≥ 90% on core (measure with `pytest-cov`) |
-| 3 | Integration testing | Phase A | ✅ | `tests/integration/` — detector→pipeline→signal and risk-in-loop both covered |
-| 4 | Historical replay / no-lookahead | Phase C · `/smc-review` | 🟡 | Bar-by-bar replay only (`history = candles[:i]`); **no future leak, no repainting** — re-audit each alpha before its gate run |
-| 5 | Backtesting validation | Phase C/D · **the locked gate** | ⬜ | **Locked gate** (see below) on **GC/MGC/6E** net-of-cost. Not the framework's PF>1.3/500-trades and not crypto — see Reconciliation |
-| 6 | Risk engine verification | Phase A | ✅ | 6 guards proven (35 tests); sizing = 0.5%/trade, daily 2%, DD 15% — **locked numbers**, not the framework's 3%/10% |
-| 7 | Infrastructure resilience | Phase D | 🔒 | API-down / DB-fail / VPS-reboot / net-outage / webhook-fail → safe-mode + state recovery. Built only after a ROBUST verdict |
-| 8 | Paper trading (30–60d) | Phase E dry-run | 🔒 | = the locked **30-day dry-run**. No crashes, risk rules obeyed, expectancy tracked vs backtest |
-| 9 | Shadow trading (30d) | Phase E | 🔒 | Production logic, virtual orders; live result vs expected stays stable. **New rung — adopted** |
-| 10 | Live capital pilot | Phase E | 🔒 | Owner-only flip after ROBUST + dry-run. Ramp $100→$250→$500→$1000; scale only on sustained edge (not "30 trades positive" alone) |
-| 11 | Scale-up verification | Phase E | 🔒 | Slippage/latency/spread/capacity stable at 10k→50k→100k sims |
-
-Deployment-state gates: **`READY_FOR_PAPER`** requires 0–6 green; **`READY_FOR_SHADOW`** adds 8;
-**`READY_FOR_LIVE_PILOT`** adds 9 **and a ROBUST gate verdict**; **`READY_FOR_SCALE`** adds 11.
-
----
-
-## Reconciliation with locked decisions (where the framework is overridden)
-
-The owner's framework is a strong verification spine, but five points conflict with pre-registered
-locked rules. The locked rules win — these are not negotiable post-data:
-
-1. **Backtest instruments = CME GC/MGC + 6E only.** The framework lists XAUUSD / BTCUSDT / ETHUSDT.
-   Crypto is the **closed** line (archived FRAGILE/FAIL in `research_archive/`), and spot XAUUSD ≠ GC
-   futures. Per-instrument models, GC primary. No crypto re-entry.
-2. **Phase-5 pass bar = the locked gate, not PF>1.3 / 500 trades.** The immutable gate is *stricter and
-   multi-dimensional*: n ≥ 200 net trades, **net** PF > 1.25, Sharpe > 1.2, DD < 15%, WR > 45%, CPCV
-   median PF > 1.0, WF ≥ 60%, MC p5 PF > 0.9, DSR z > 0. Thresholds were registered before data and
-   **cannot be changed** — not even to the framework's numbers (`GATE_DECISION.md`).
-3. **Risk limits stay locked:** 0.5%/trade, **2%** daily (not 3%), 6% weekly, **15%** max DD (not 10%),
-   ≤5× leverage, ≤3 concurrent. The framework's $50-on-$10k sizing already matches; its loss limits do not.
-4. **SMC never generates entries** (§3). The framework's "…→ FVG → OB → **Signal**" pipeline is allowed
-   only as the **WHERE** context; a momentum/delta trigger supplies **WHEN**. A ChoCH→entry alpha is the
-   archived `SMC_H1_FRAGILE` pattern — A0_MVP runs it solely as a *plumbing check*, expected FRAGILE.
-5. **Live promotion is owner-only and gate-gated.** Framework Phase 10's "scale after 30 trades +
-   positive expectancy" is an in-pilot *monitor*, **not** the promotion criterion. Live requires:
-   ROBUST gate verdict → 30-day dry-run pass → owner manually flips the flag. Never the agent. Ever.
-
-**Already core (not "future work"):** the framework suggests adding walk-forward / Monte-Carlo / CPCV
-*after* Phase 5 — these are already inside the locked gate today. **Adopted as enhancements:** `mypy` +
-`bandit` + `pip-audit` in CI (Phase 1); a **30-day shadow-trading** rung (Phase 9); and "**beat a simple
-trend-following baseline**" as an additional hurdle in the race — each variant counts as +1 DSR trial.
-
----
-
-## Phase A — Platform & Validation Core ✅
+## Phase A — Platform & Validation Core ✅ (audited 2026-06-14)
 
 | Item | Status | Evidence |
 |------|--------|----------|
@@ -188,14 +151,16 @@ trend-following baseline**" as an additional hurdle in the race — each variant
 | A1SmcMomentum wrapper + audit tracker | ✅ | pipeline + backtest tests |
 | Trial registry (honest --n-trials) | ✅ | `ag/validation/trial_log.py` |
 | Backtest harness | ✅ | `scripts/run_alpha_backtest.py` |
-| Test suite: unit · integration · backtest · e2e | ✅ | **498 passed · 17 skip** (deps absent) |
+| Test suite: unit · integration · backtest · e2e | ✅ | **498 / 498 green** (17 skip pending deps) |
 | CI (GitHub Actions) + branch protection | ✅ | PR required + test check |
+| Pipeline end-to-end verified (synthetic) | ✅ | Preflight 2026-06-14; 2 bugs fixed |
+| Repo audit | ✅ | `docs/audits/REPO_AUDIT_2026-06-14.md` — PASS (4 WARNs open) |
 
 ---
 
-## Phase B — Data Layer 🟡 FIRST DOWNLOAD PENDING
+## Phase B — Data Layer 🟡 DATABENTO KEY NEEDED
 
-> **Loaders built. Cache-hit path tested. One TWS session away from real data.**
+> **Loaders built + pipeline verified end-to-end. Single remaining blocker: Databento API key.**
 
 | Step | Status | Notes |
 |------|--------|-------|
@@ -204,10 +169,11 @@ trend-following baseline**" as an additional hurdle in the race — each variant
 | B0 — Source-agnostic factory (`get_loader`) | ✅ | Identical `.load()` API on both — one flag to switch |
 | B0 — CME roll calendar (`roll.py`) | ✅ | `get_front_month()` for GC/MGC/6E |
 | B0 — Integrity checker (`check_ohlcv`) | ✅ | C1–C8, shared across both loaders |
-| B0 — Synthetic fixtures + data tests | ✅ | pass · 17 skip (pyarrow/ib_insync absent) |
-| **B1 — IB plumbing download** | 🟡 **NEXT** | Start TWS → `loader.load("GC","1h",…)` — READ-tier only |
-| B2 — Integrity check on downloaded data | ⬜ | `check_ohlcv(df,"GC","1h")` — auto after download |
-| **B3 — Databento 1m bars (gate-grade)** | 🔴 **BLOCKED** | Needs `DATABENTO_API_KEY`; A0_MVP spec requires Databento |
+| B0 — Synthetic fixtures + 99 data tests | ✅ | 82 pass · 17 skip (pyarrow/ib_insync absent) |
+| B0 — Pipeline e2e verified (preflight) | ✅ | backtest → gate runs on synthetic; 2 bugs fixed |
+| B1 — IB plumbing download | 🟡 OPTIONAL | READ-tier only (1 yr, 1 regime); not gate-grade |
+| B2 — Integrity check on downloaded data | ⬜ | Auto after download |
+| **B3 — Databento 1m bars (gate-grade)** | 🔴 **BLOCKED** | Needs `DATABENTO_API_KEY` → **only remaining blocker** |
 
 **Install to unblock the 17 skipped tests:**
 ```
@@ -236,12 +202,13 @@ Gate thresholds (locked, immutable):
  A0_MVP      ✅       ✅       ⬜       PENDING
              ⚠️  PLUMBING CHECK ONLY — verdict expected FRAGILE
              sweep+choch → entry = archived SMC_H1_FRAGILE pattern (GC PF 0.698)
-             GROUND_TRUTH §3: SMC answers WHERE not WHEN; ChoCH→entry is WHEN
+             CLAUDE.md §3: SMC answers WHERE not WHEN; ChoCH→entry is WHEN
              Valid purpose: confirm pipeline runs; NOT a test of A1 hypothesis
+             BLOCKED ON: Databento 1m data (A0_MVP_DECISION.md spec)
 
  A1          ✅       ✅       ⬜       PENDING
-             (full SMC WHERE-filter + momentum/delta WHEN-trigger)
-             BLOCKED ON: A0_MVP plumbing run + Databento data
+             (full SMC filter: sweep+choch+OB+FVG+displacement)
+             BLOCKED ON: A0_MVP gated first
 
  A2          ✅       ✅       ✅       READ  ⚠️
              n=325 OOS · 10/11 PASS · DSR FAIL (z=−25.32)
@@ -252,39 +219,53 @@ Gate thresholds (locked, immutable):
              (ensemble: 0.4·A1 + 0.3·regime + 0.3·A2 > 0.75)
 ```
 
-Optional additional hurdle (adopted): each alpha should **beat a simple trend-following baseline**
-on the same data before promotion; the baseline and every variant are logged as DSR trials.
+### Next actions in Phase C (after Databento data lands)
+
+```
+ DISCIPLINE: every parameter tune must be logged in trial_log.py BEFORE the run.
+             --n-trials = row count in trial_log.py at gate time. No exceptions.
+             Unlogged experiment = self-deception (CLAUDE.md §7).
+
+ 1. A0_MVP backtest  → scripts/run_alpha_backtest.py --alpha a0_mvp --data <gc_1m.parquet>
+    → A0_MVP is a pipeline smoke test; sweep+choch = archived FRAGILE; expect FRAGILE
+    → If FRAGILE: archive to research_archive/a0_mvp/ — do NOT tune the signal to "fix" it
+    → If signal rate < 1/20 bars: log tune attempt in trial_log.py, lower swing_lookback
+    → Each lookback variant = +1 trial in --n-trials
+
+ 2. A0_MVP gate      → scripts/run_gate.py trades.csv --instrument GC \
+                         --n-trials <count from trial_log.py>
+    → IB 1h data is READ-tier only (1 year, 1 regime) — not valid for ROBUST verdict
+    → Databento multi-year 1m data required for CPCV/WF to be meaningful
+
+ 3. A1 gate (first real edge test — WHERE filter + WHEN trigger, not ChoCH→entry)
+ 4. A3 ensemble gate (last — needs A1 + A2 both gated)
+```
 
 ---
 
 ## Phase D — Execution Layer 🔒 LOCKED
 
-> **Locked until at least one ROBUST verdict exists.** This is also verification PHASE 7
-> (infrastructure resilience): API-down, DB-failure, VPS-reboot, net-outage, webhook-failure must
-> all degrade to safe-mode with state recovery and no duplicate orders.
+> **Locked until at least one ROBUST verdict exists. IB historical data layer exists (Phase B)
+> but the execution / order-management layer must not be built until the gate passes.**
 
 | Component | Status |
 |-----------|--------|
 | IB historical data (Phase B) | ✅ Built (`ag/data/ib_live/`) |
 | Nautilus Trader integration | 🔒 Locked |
 | IB live order gateway | 🔒 Locked |
-| Order management / retry / kill switch | 🔒 Locked |
+| Order management / retry logic | 🔒 Locked |
 | Live position journal | 🔒 Locked |
-| Resilience test suite (PHASE 7) | 🔒 Locked |
 
 ---
 
 ## Phase E — Live Trading 🔒 LOCKED
 
-> Verification rungs 8 → 9 → 10 → 11, in order. Owner-only flip.
+> **Gate → ROBUST → 30-day dry-run → owner manually flips the live flag. Not the agent. Ever.**
 
 ```
-  ROBUST gate verdict
-   └▶ PHASE 8  Paper / 30-day dry-run    (READY_FOR_PAPER)
-        └▶ PHASE 9  Shadow trading 30d   (READY_FOR_SHADOW)
-             └▶ PHASE 10 Live pilot      (READY_FOR_LIVE_PILOT — owner flips flag)
-                  $100 → $250 → $500 → $1000, scale only on sustained edge
-                  └▶ PHASE 11 Scale-up   (READY_FOR_SCALE — 10k/50k/100k sims stable)
+  ROBUST verdict                 ─┐
+  + 30-day dry-run pass          ─┤──▶  Owner enables live trading manually
+  + owner explicit authorization ─┘
 ```
 
 ---
@@ -299,45 +280,28 @@ on the same data before promotion; the baseline and every variant are logged as 
 
 ---
 
-## Master Correction Loop (on any phase failure)
+## Open Gaps
 
-```
-  Failure → Root-cause analysis → Code fix → Unit test → Integration test
-          → Replay test → Re-run the failed phase.   Never skip back to live.
-```
-
-A FRAGILE alpha is archived to `research_archive/<alpha>/` with a verdict header — **not** tuned
-to "pass." Tuning a rejected entry to flatter it is forbidden (`GROUND_TRUTH.md`).
-
----
-
-## Final Production-Readiness Gate
-
-Live capital is authorized only when **all** hold:
-
-```
- ✓ Architecture verified            ✓ Risk controls verified (6 guards)
- ✓ Code quality clean (+mypy/bandit) ✓ Resilience/recovery tests pass
- ✓ Component tests pass              ✓ 30–60d paper (dry-run) complete
- ✓ Integration tests pass           ✓ 30d shadow trading complete
- ✓ Replay: no lookahead/repainting  ✓ ROBUST gate verdict on GC (net-of-cost)
- ✓ Backtest ROBUST (locked gate)    ✓ Live pilot profitable + monitoring active
- ✓ Kill switch operational          ✓ Audit/journal logs complete
- ✓ Owner manually enables live      ← the only hand on the switch
-```
+| Gap | Priority | Source |
+|-----|----------|--------|
+| **`DATABENTO_API_KEY` not set** | 🔴 Critical — only blocker to first verdict | B3 |
+| FRAGILE header missing from SMC detector files | 🟡 High — fix before gate (audit S1 FAIL) | Audit 2026-06-14 |
+| `_active_obs` unbounded growth in `a1_alpha.py` | 🟡 High — memory risk on real data (audit S9) | Audit 2026-06-14 |
+| `TRIALS.md` parameter ledger missing | 🟡 Medium — required by SMC skill (audit S8) | Audit 2026-06-14 |
+| No look-ahead regression tests per SMC detector | 🟡 Medium — audit S6 | Audit 2026-06-14 |
+| pyarrow not installed | Low — `pip install -e ".[dev]"` → 17 tests green | B0 |
+| ib_insync not installed | Low — `pip install -e ".[phase1]"` | B1 |
+| No unit tests for cpcv/walk_forward/monte_carlo | Low — deferred post-verdict | Audit R7 |
+| CPCV/WF train-side purge scores only OOS | Low — by design | - |
 
 ---
 
 ## What "done" looks like
 
 ```
-  Phase B complete  →  GC 1m+1h data downloads, integrity checks pass, suite green
-  A0_MVP run        →  plumbing confirmed (verdict expected FRAGILE — that's fine)
-  A1 ROBUST         →  first real edge; A3 ensemble becomes buildable
-  A3 / A1 ROBUST    →  PHASE 7 resilience + 30-day dry-run begin
-  Dry-run + shadow  →  owner enables live pilot. Not before. Not the agent.
+  Phase B complete  →  GC 1m+1h data downloads, integrity checks pass, 498+17 all green
+  A0_MVP ROBUST     →  First real gate verdict. A1 filter-by-filter work begins.
+  A1 ROBUST         →  A3 ensemble becomes buildable.
+  A3 ROBUST         →  30-day dry-run starts. Execution layer build begins.
+  Dry-run pass      →  Owner enables live trading. Not before.
 ```
-
-> Honest prior: "profitable SMC bot" is still **unproven** here. Pure-SMC entries are archived
-> FRAGILE and A2 was demoted READ-not-ROBUST. This ladder is how we find out *cheaply* — and a
-> well-evidenced "no edge" is a valid, successful outcome.

@@ -3,7 +3,6 @@ is deterministic, and never hands a callback a future bar.
 """
 from __future__ import annotations
 
-import pandas as pd
 import pytest
 
 from ag.validation.replay_harness import ReplayHarness

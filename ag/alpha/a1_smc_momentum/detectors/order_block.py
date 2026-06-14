@@ -5,6 +5,11 @@ the previous swing high.  Bearish OB: mirror.
 
 Mitigation: OB is consumed when price closes through it
 (bullish OB: close < OB.low; bearish OB: close > OB.high).
+
+# ⚠️  FRAGILE — SMC as a standalone signal has no edge on GC H1 (see
+# research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md).
+# This module is a CONTEXT FILTER only: it answers WHERE (OB zones),
+# never WHEN (entry timing).  Entry decisions live in AlphaModule.propose().
 """
 from __future__ import annotations
 

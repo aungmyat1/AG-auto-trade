@@ -1,5 +1,10 @@
 """Composable SMC strategy pipeline.
 
+# ⚠️  FRAGILE — SMC as a standalone signal has no edge on GC H1 (see
+# research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md).
+# This pipeline is a DATA-ONLY CONTEXT FILTER.  It does not produce entries.
+# All outputs are zone metadata (WHERE).  Entry decisions live in AlphaModule.propose().
+
 Start with the MVP (sweep=True, choch=True, all others False).
 Add one filter at a time.  Every filter must prove it improves expectancy
 WITHOUT destroying trade count before the next filter is added.

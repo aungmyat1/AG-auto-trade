@@ -65,11 +65,12 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
   New: DatabentoLoader + IBHistoricalLoader (identical .load() API), check_ohlcv (shared),
   CME expiry/roll calendar, source-agnostic get_loader() factory, 99 new data tests;
   17 skips = parquet roundtrip + IB connection tests (need pyarrow/ib_insync/TWS)
-- 2026-06-14: ROADMAP.md integrates owner's 12-phase verification ladder (PHASE 0–11)
-  mapped onto build phases A–E + deployment states, with a Reconciliation section keeping
-  locked rules authoritative (GC/MGC/6E only — no crypto; locked gate not PF>1.3/500-trades;
-  2%/15% risk not 3%/10%; SMC = WHERE-filter only; owner-only gate-gated live). Also made the
-  C3 timezone integrity test environment-portable (fixed UTC offset, no system tzdata). 498 green.
+- 2026-06-14: replay-integrity suite (`ag/validation/replay_harness.py` + `tests/replay/`):
+  ReplayHarness (one closed bar at a time, no future access, deterministic, timestamp checks),
+  future_leak_free/repaint_free property checks — 43 pass + 1 xfail.
+  **FINDING LF-1**: LiquidityDetector still has a future-cluster look-ahead (liquidity.py:50-55)
+  that PR #14's prefix-lag tests MISS — caught only by future-poisoning. C3 tz test made
+  environment-portable. Added `docs/REALISTIC_OUTCOME.md` + `docs/SUCCESS_CRITERIA.md`.
 
 ## Known Gaps
 
@@ -94,6 +95,12 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
 | Databento API key not set | Add `DATABENTO_API_KEY` to `.env` to enable DB downloads |
 | CPCV/WF train-side purge scores only OOS | By design (no per-fold refit on static series) |
 | Lock-before-look loader missing | Gate thresholds hardcoded in gate.py; loader is the A4 test |
+| **[AUDIT S1]** FRAGILE header missing from SMC detector files | Add to `detectors/{liquidity,order_block,fvg,bos_choch}.py` + `pipeline.py` — P1 |
+| **[AUDIT S9]** `_active_obs` list unbounded | Cap at 50 in `a1_alpha.py:77` — P2 |
+| **[AUDIT S8]** No `TRIALS.md` parameter ledger | Create `ag/alpha/a1_smc_momentum/TRIALS.md` — P3 |
+| **[AUDIT S6]** No look-ahead regression tests for SMC detectors | Partly closed — `tests/replay/` future-poisoning + repaint suite added |
+| **LF-1** LiquidityDetector future-cluster look-ahead (real, on main) | Pinned by `tests/replay/` xfail. Fix = tag level at confirmation bar (latest swing in cluster). Owner decision — touches A1 during freeze. PR #14's prefix-lag tests miss it. |
+| **[AUDIT R7-R9]** No unit tests for cpcv/walk_forward/monte_carlo/a1_alpha.propose()/historical | Deferred until post-verdict |
 
 ## Next Goal
 

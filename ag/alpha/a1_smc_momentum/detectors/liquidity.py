@@ -2,6 +2,11 @@
 
 Equal highs/lows within cluster_atr_mult * ATR of each other form a liquidity pool.
 A sweep is confirmed when price wicks beyond the level then closes back inside.
+
+# ⚠️  FRAGILE — SMC as a standalone signal has no edge on GC H1 (see
+# research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md).
+# This module is a CONTEXT FILTER only: it answers WHERE (liquidity zones),
+# never WHEN (entry timing).  Entry decisions live in AlphaModule.propose().
 """
 from __future__ import annotations
 

@@ -30,10 +30,17 @@ def make_structured_ohlcv(n: int = 300, seed: int = 7) -> pd.DataFrame:
         hi = max(o, c) + abs(rng.normal(0, 1.0))
         lo = min(o, c) - abs(rng.normal(0, 1.0))
         if i in (88, 89, 90):          # bullish displacement + gap up + order block
-            c = o + 16.0; hi = c + 0.6; lo = o + 0.4
+            c = o + 16.0
+            hi = c + 0.6
+            lo = o + 0.4
         elif i in (200, 201, 202):     # bearish displacement + gap down
-            c = o - 16.0; lo = c - 0.6; hi = o - 0.4
-        o_l.append(o); h_l.append(hi); l_l.append(lo); c_l.append(c)
+            c = o - 16.0
+            lo = c - 0.6
+            hi = o - 0.4
+        o_l.append(o)
+        h_l.append(hi)
+        l_l.append(lo)
+        c_l.append(c)
         v_l.append(float(rng.integers(1000, 5000)))
         price = c
     idx = pd.date_range("2024-01-01", periods=n, freq="h", tz="UTC")

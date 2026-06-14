@@ -8,7 +8,7 @@ import pytest
 
 from ag.validation.replay_harness import concept_key, repaint_free
 
-from ._smc_cases import CASES, DETECT_FNS, IDS
+from ._smc_cases import DETECT_FNS, IDS
 
 SPLITS = [80, 130, 190, 250]
 
