@@ -1,8 +1,11 @@
 # AG Auto-Trade — Live Roadmap
 > Last synced: 2026-06-14 (spec↔code audit — "A1" run was WHERE-only) · Source of truth: `docs/PROJECT_STATE.md`
 
-> **OPEN QUESTION (current):** Does **WHERE-only SMC** have an edge on GC/6E?
-> (prior: crypto-SMC FRAGILE, A0_MVP FRAGILE — and the GC 5yr WHERE-only run is UNSCOREABLE at n=33<50.)
+> **OPEN QUESTION (current):** WHERE-only SMC-as-entry: **concluded non-scoreable on GC/6E
+> (3 non-passes** — crypto-SMC FRAGILE, A0_MVP FRAGILE, A1_WHERE_ONLY UNSCOREABLE n=33). Live
+> question: is n=33 **genuine setup-rarity** or an **over-strict/buggy WHERE filter**? Code view:
+> over-strict AND-gating of all 5 components (not ≥3-of-4) — pending empirical funnel
+> (`docs/dispatch/A1_FUNNEL_DIAGNOSIS.md`). Decides build-WHERE-redesign vs promote-A2.
 >
 > **Spec-drift reconciliation (2026-06-14):** the alpha run as "A1" is **A1_WHERE_ONLY**
 > (sweep+ChoCH+OB+FVG+displacement, no WHEN trigger, no Fib) — registered in

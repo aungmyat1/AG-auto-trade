@@ -19,7 +19,7 @@
 |--------|---------------------|----------------------|-------|
 | A0_MVP | TESTED 2026-06-14   | FRAGILE              | 38 trades < n≥50 floor; sweep+ChoCH plumbing check; gate skipped; archived `research_archive/a0_mvp/` |
 | A1 (full WHERE+WHEN) | NOT BUILT | SPEC LOCKED | §1 requires ≥3-of-4 WHERE confluence + ≥2-of-3 WHEN; **WHEN never implemented**. Do not wire+gate on seen 2020-24 data. `A1_SMC_MOMENTUM_DECISION.md` |
-| A1_WHERE_ONLY | TESTED 2026-06-14 | **UNSCOREABLE** | sweep+ChoCH+OB+FVG+displacement (no WHEN, no Fib); GC 5yr n=33<50 (WR 66.7%); archived sweep+ChoCH→entry pattern, FRAGILE-expected. `A1_WHERE_ONLY_DECISION.md` |
+| A1_WHERE_ONLY | **ARCHIVED 2026-06-14** | UNSCOREABLE | GC 5yr n=33<50; 3rd non-pass of WHERE-only SMC-as-entry; not re-run (§7). `research_archive/a1_where_only/` |
 | A2     | TESTED 2026-06-12   | READ (OPTIMISTIC)    | n=325 OOS, net PF=3.745, 10/11 pass, DSR z=−25.32 |
 | A3     | NOT TESTED          | PENDING              | Ensemble; spec locked + skeleton built |
 
