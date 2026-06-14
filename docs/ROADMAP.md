@@ -1,5 +1,5 @@
 # AG Auto-Trade — Live Roadmap
-> Last synced: 2026-06-14 (A1 backtest complete — verdict pending) · Source of truth: `docs/PROJECT_STATE.md`
+> Last synced: 2026-06-14 (A1_WHERE_ONLY lock spec created — PR #25 pending) · Source of truth: `docs/PROJECT_STATE.md`
 
 ---
 
@@ -27,7 +27,7 @@
 ```
 Phase A  Platform hardening     ████████████████████  100%  ✅ DONE  (audit 2026-06-14: PASS)
 Phase B  Data layer             ████████████████████  100%  ✅ DONE (GC+6E 1h+1m 2020-2024)
-Phase C  Alpha gate race        ████████░░░░░░░░░░░░   40%  🟡 A0+A1 ran · A1 verdict pending
+Phase C  Alpha gate race        ████████░░░░░░░░░░░░   40%  🟡 A0 FRAGILE · A1_WHERE_ONLY lock pending PR #25
 Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 ```
@@ -101,32 +101,26 @@ FRAGILE verdict and the Bybit pivot was rejected on corrected facts
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  ⬅️  OWNER DECISION REQUIRED — A1 verdict               │
+│  ⬅️  WAITING: PR #25 CI green → merge → gate run        │
 │                                                         │
-│  A1 backtest results (2026-06-14):                      │
+│  Pre-gate code audit (2026-06-14) finding:              │
+│  A1SmcMomentum does NOT implement the locked §1 spec.   │
+│  Built code = WHERE-only (no MT1/MT2/MT3, no Fib Z4,   │
+│  no regime gate, no ATR floor). 5 numeric params were   │
+│  not pre-committed.                                     │
 │                                                         │
-│  GC 1h 2020-2024 (5yr):                                │
-│    50 signals → 33 approved                             │
-│    Win rate 66.7%  |  Mean R +0.059                     │
-│    Below READ floor (n<50) — gate cannot run            │
+│  Owner decision: Option C                               │
+│  → New alpha: A1_WHERE_ONLY                             │
+│  → A1_WHERE_ONLY_DECISION.md locked (n_trials=23,       │
+│    IS cutoff=2022-12-30, GC+6E CostModel pre-committed) │
+│  → Full A1 §1 spec marked NOT BUILT — needs fresh       │
+│    held-out window to gate validly                      │
+│  → PR #25 open (lock/a1-where-only-spec)               │
 │                                                         │
-│  6E 1h 2020-2024 (5yr):                                 │
-│    282 signals → 3 approved  ⚠️ ARTIFACT                │
-│    Stateful risk-engine locked from 2020 COVID           │
-│    volatility — not a valid signal count                 │
-│                                                         │
-│  Trials logged: A0_MVP×1  A1×2  (trial_log.jsonl)      │
-│  603/603 tests green. LF-1 fixed. Data cached.          │
-│                                                         │
-│  HONEST READ: A1 fires ~10 signals/year on GC H1.      │
-│  Even on 5 years, n<50. Edge too rare to gate on        │
-│  available CME H1 data — not a quality failure          │
-│  (GC WR 66.7% is promising) but a frequency one.        │
-│                                                         │
-│  Owner options:                                         │
-│  A) Archive A1 FRAGILE → A2 carries the race           │
-│  B) Trial 3: test displacement-removal as a             │
-│     'does it add value?' hypothesis (not a rescue)      │
+│  After PR #25 merges:                                   │
+│  Run A1_WHERE_ONLY: GC+6E, 5yr, per §9, --n-trials 23  │
+│  Expect FRAGILE on both (n≈33 GC < READ floor 50)       │
+│  If FRAGILE on all → archive → A2 carries the race     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -192,11 +186,16 @@ Gate thresholds (locked, immutable):
              Gate skipped. Archived: research_archive/a0_mvp/VERDICT.md
              Purpose fulfilled: pipeline confirmed end-to-end.
 
- A1          ✅       ✅       ⬜       VERDICT PENDING  ← OWNER DECISION
-             GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 (below READ floor n<50)
-             6E 1h 5yr: 3 approved (backtest artifact — stateful risk-engine from 2020)
-             Trials: 2 logged. Signal rate ~10/yr on GC H1 — too rare to gate as-is.
-             Options: A) archive FRAGILE → A2 carries  B) trial 3 displacement-removal
+ A1 (full spec) ✅     ❌       ⬜       NOT BUILT
+             §1 (WHERE+WHEN, Z1–Z4, MT1–MT3) is the locked spec — never implemented.
+             Requires a fresh held-out data window to gate validly.
+             See: ag/validation/lock_before_look/A1_SMC_MOMENTUM_DECISION.md §8
+
+ A1_WHERE_ONLY ✅     ✅       ⬜       LOCK PENDING  ← PR #25
+             Built code: sweep+ChoCH+OB+FVG+displacement, no WHEN gate
+             Backtest: GC 5yr 33 approved · WR 66.7%; 6E 5yr 3 (artifact)
+             n_trials floor = 23 · IS cutoff = 2022-12-30 (pre-committed)
+             Gate run pending PR #25 merge. Expect FRAGILE (n<50 READ floor)
 
  A2          ✅       ✅       ✅       READ  ⚠️
              n=325 OOS · 10/11 PASS · DSR FAIL (z=−25.32)
@@ -213,14 +212,16 @@ Gate thresholds (locked, immutable):
  DONE  A0_MVP (2026-06-14) — FRAGILE · 38 trades GC 1m 2022-24 · below floor
        Archive: research_archive/a0_mvp/VERDICT.md · 1 trial logged
 
- DONE  A1 backtest (2026-06-14) — verdict PENDING OWNER DECISION
-       GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 (below READ floor)
-       6E 1h 5yr: 3 approved (risk-engine artifact, not valid)
-       Signal rate too rare (~10/yr GC H1) — 2 trials logged
-       Next: owner decides A) archive FRAGILE  B) trial 3 displacement-removal
+ DONE  A1 code audit (2026-06-14) — spec ≠ implementation discovered
+       A1SmcMomentum built = WHERE-only (no WHEN, no Fib Z4, no regime gate)
+       5 numeric params unlogged. Owner decision: Option C (new alpha ID)
 
- NEXT  A2 formal gate — if A1 archived; A2 (READ, n=325) carries the race
-       Requires: owner decision on A1 first
+ DONE  A1_WHERE_ONLY lock spec created (2026-06-14) — PR #25 pending CI
+       A1_WHERE_ONLY_DECISION.md: n_trials=23, IS cutoff=2022-12-30
+       A1 §1 full spec marked NOT BUILT in amendment log
+
+ NEXT  Merge PR #25 → run A1_WHERE_ONLY GC+6E 5yr --n-trials 23
+       Expect FRAGILE → archive → A2 carries the race
 
  LAST  A3 ensemble gate — needs A1 + A2 both gated
 

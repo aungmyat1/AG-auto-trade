@@ -1,10 +1,11 @@
 # PROJECT STATE — live memory (read me first, keep me updated)
 
-Last updated: 2026-06-14 (A0_MVP FRAGILE verdict recorded — freeze sequence complete, A1 next)
+Last updated: 2026-06-14 (pre-gate audit: A1 spec ≠ code; A1_WHERE_ONLY lock spec created — PR #25 pending)
 
 ## Current Stage
 
-**Phase A complete. Phase B complete. A0_MVP verdict recorded. FREEZE LIFTED — A1 gate race is next.**
+**Phase A complete. Phase B complete. A0_MVP FRAGILE. Pre-gate audit found A1 spec not implemented.
+A1_WHERE_ONLY locked as new alpha; gate run pending PR #25 merge.**
 v4 build order position:
 
 1. ✅ Validation core (gate, CPCV, purged WF, Monte Carlo, DSR, cost model) — 45 tests green
@@ -52,20 +53,28 @@ v4 build order position:
    - A2: READ verdict (2026-06-12) — 10/11 criteria, DSR fail z=−25.32
    - **A0_MVP**: FRAGILE verdict (2026-06-14) — 38 trades, below READ floor (n<50), gate skipped
      Pipeline smoke test complete. Archived: `research_archive/a0_mvp/VERDICT.md`
-   - A1: spec locked, detectors built, A1SmcMomentum wrapper built (not yet gated) ← NEXT
+   - **A1 (full spec)**: spec locked (WHERE+WHEN, Z1–Z4, MT1–MT3) — **NOT BUILT**
+     Pre-gate audit (2026-06-14) found A1SmcMomentum does not implement §1.
+     §1 reserved for a fresh held-out data window. Not buildable on 2020-2024.
+   - **A1_WHERE_ONLY**: built (sweep+ChoCH+OB+FVG+displacement, no WHEN gate)
+     Lock spec created: `ag/validation/lock_before_look/A1_WHERE_ONLY_DECISION.md`
+     n_trials=23 · IS cutoff=2022-12-30 · PR #25 pending merge
+     Backtest results: GC 5yr 33 approved (WR 66.7%), 6E 5yr 3 (artifact)
+     Gate run blocked until PR #25 merges. Expect FRAGILE.
    - **A3**: spec locked (`A3_ENSEMBLE_DECISION.md`) + skeleton built (not yet gated)
    - Trial registry built: `ag/validation/trial_log.py` — honest --n-trials accounting
    - Backtest harness built: `scripts/run_alpha_backtest.py`
-4. 🟡 Gate race (identical gate, all alphas) — A0_MVP FRAGILE; A1 is next
+4. 🟡 Gate race (identical gate, all alphas) — A0_MVP FRAGILE; A1_WHERE_ONLY pending
 5. ⬜ Execution (Nautilus + IB) — forbidden until a ROBUST verdict exists
 
 ## Active Validation Target
 
-- Instruments: GC (primary), MGC, 6E — per-instrument models, never shared
+- Instruments: GC (primary), 6E — per-instrument models, never shared (MGC deferred)
 - Gate: `ag/validation/lock_before_look/GATE_DECISION.md` (locked 2026-06-12, immutable)
 - Status of alphas:
-  - A0_MVP: SPEC LOCKED · not yet gated
-  - A1: SPEC LOCKED · not yet gated
+  - A0_MVP: FRAGILE (archived 2026-06-14)
+  - A1 (full spec): NOT BUILT — §1 WHERE+WHEN requires fresh data window
+  - A1_WHERE_ONLY: LOCK PENDING (PR #25) · n_trials=23 · gate run next
   - A2: READ (OPTIMISTIC, n=325 OOS)
   - A3: SPEC LOCKED · skeleton built · not yet gated
 - Live trading: **OFF** (no ROBUST verdict exists; nothing may trade)
@@ -100,6 +109,13 @@ v4 build order position:
 - 2026-06-14 (A0_MVP run): 38 approved trades, WR 47.4%, mean R −0.003
   FRAGILE (below READ floor n<50, gate skipped). Pipeline confirmed end-to-end.
   All 4 audit items confirmed closed (S1/S6/S8/S9). Archived: `research_archive/a0_mvp/VERDICT.md`
+- 2026-06-14 (PR #22): A1 §9 per-instrument verdict-reading rule locked (before any gate run)
+- 2026-06-14 (PR #23): ROADMAP synced to A1 backtest results (GC 33/6E 3 artifact)
+- 2026-06-14 (pre-gate audit): A1SmcMomentum code does NOT implement §1 spec.
+  Missing: MT1/MT2/MT3 WHEN trigger, Fib Z4, regime gate, ATR floor. 5 numeric params unlogged.
+  Owner decision: Option C — new alpha ID A1_WHERE_ONLY, full §1 spec marked NOT BUILT.
+- 2026-06-14 (PR #25): A1_WHERE_ONLY_DECISION.md locked (n_trials=23, IS=2022-12-30)
+  A1_SMC_MOMENTUM_DECISION.md §8 amended (§1 NOT BUILT). 603/603 green. PR open.
 
 ## Known Gaps
 
@@ -131,30 +147,36 @@ v4 build order position:
 | ~~ib_insync not installed~~ | ✅ Closed 2026-06-14 (PR #18 install) |
 | No unit tests for cpcv/walk_forward/monte_carlo | Deferred post-verdict (Audit R7-R9) |
 | CPCV/WF train-side purge scores only OOS | By design |
+| A1 spec (§1 WHERE+WHEN) not implemented in built code | By design — gating A1_WHERE_ONLY separately; full-A1 needs fresh window |
+| 6E stateful risk-engine artifact in multi-year backtests | 2020 COVID volatility locks engine for full run; per-year reset needed before 6E is gate-valid |
+| MGC CostModel.for_mgc() not implemented | Deferred — needs CME/broker schedule verified; separate PR required |
 
 ## Next Goal
 
-**FREEZE LIFTED. Next: A1 gate race on GC 1h data.**
+**Merge PR #25 → run A1_WHERE_ONLY gate → archive FRAGILE → A2 carries the race.**
 
-A0_MVP verdict recorded (FRAGILE, pipeline smoke test complete). All audit items closed.
-Owner review of A0_MVP result is the gate before A1 begins.
+  1. PR #25 merge on CI green (`lock/a1-where-only-spec`)
+     Lock files: `A1_WHERE_ONLY_DECISION.md` + `A1_SMC_MOMENTUM_DECISION.md` §8 amendment
 
-  After owner review, the A1 sequence (~1–2 hours compute):
+  2. Run A1_WHERE_ONLY per §9 (per-instrument, --n-trials 23):
+     ```bash
+     python3 scripts/run_alpha_backtest.py --alpha a1 \
+         --data /home/aungp/data/cache/GC_1h.parquet \
+         --instrument GC --cost-preset gc \
+         --out results/a1_where_only_gc_trades.csv
 
-  1. Resample cached 1m to 1h:
-     ```python
-     import pandas as pd
-     df = pd.read_parquet('/home/aungp/data/cache/GC_1m.parquet')
-     df_1h = df.resample('1h').agg({'open':'first','high':'max','low':'min','close':'last','volume':'sum'}).dropna()
-     df_1h.to_parquet('/home/aungp/data/cache/GC_1h.parquet')
+     python3 scripts/run_alpha_backtest.py --alpha a1 \
+         --data /home/aungp/data/cache/6E_1h.parquet \
+         --instrument 6E --cost-preset 6e \
+         --out results/a1_where_only_6e_trades.csv
      ```
-  2. Log A1 baseline trial: `TrialRegistry().log("A1", "base: full WHERE filter sweep+choch+OB+FVG+displacement")`
-  3. Run A1 backtest:
-     `scripts/run_alpha_backtest.py --alpha a1 --data /home/aungp/data/cache/GC_1h.parquet --instrument GC --out results/a1_trades.csv`
-  4. Run gate (only if n_approved ≥ 50):
-     `scripts/run_gate.py results/a1_trades.csv --instrument GC --cost-preset gc --n-trials <count>`
-  5. Record verdict: ROBUST/READ → here; FRAGILE → `research_archive/a1/VERDICT.md`
-  6. Owner reviews → if ROBUST, A3 ensemble becomes buildable; if FRAGILE, reassess
+     Gate only if OOS n ≥ 50; record verdict per §6 of A1_WHERE_ONLY_DECISION.md
+
+  3. Record per-instrument verdicts in `research_archive/a1_where_only/VERDICT.md`
+     Expect FRAGILE on both (GC 5yr ≈ 33 approved < READ floor 50)
+
+  4. If FRAGILE: archive → A2 formal gate race begins
+     A2 (READ n=325) runs through identical gate at honest --n-trials from trial_log.jsonl
 
 ## Update Protocol
 
