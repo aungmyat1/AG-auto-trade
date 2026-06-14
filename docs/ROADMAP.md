@@ -34,6 +34,40 @@ Phase E  Live trading           ░░░░░░░░░░░░░░░░
 
 ---
 
+## Standing Rules (locked — do not relax without owner approval)
+
+### Rule 1 — First Verdict Rule
+
+The project SHALL NOT introduce new trading infrastructure, exchanges, execution venues,
+alpha frameworks, AI layers, master-trader systems, or instrument universes before the
+first registered gate verdict is produced on real market data.
+
+**Allowed before first verdict:** data acquisition · integrity validation · bug fixes ·
+test maintenance · A0_MVP execution · gate execution · documentation updates.
+
+**Not allowed before first verdict:** new alphas · new exchanges · new copy-trading systems ·
+new SMC variants · new master-trader intelligence · new instruments.
+
+The purpose: prevent scope expansion before evidence exists.
+
+### Rule 2 — Instrument Escalation Path
+
+Primary research instruments: **GC · MGC · 6E** (CME futures).
+
+These remain the only approved research universe until a real gate verdict exists.
+
+If A0_MVP and subsequent alphas fail to achieve ROBUST on the primary universe,
+the next approved expansion path is:
+
+1. BTCUSD
+2. ETHUSD
+
+Objective: faster hypothesis testing and higher signal frequency — not replacement of
+the primary universe. No BTC/ETH infrastructure work begins before the first real verdict
+on the primary universe unless explicitly approved by the owner.
+
+---
+
 ## ══════════════ YOU ARE HERE ══════════════
 
 ```
