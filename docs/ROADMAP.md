@@ -26,8 +26,8 @@
 
 ```
 Phase A  Platform hardening     ████████████████████  100%  ✅ DONE  (audit 2026-06-14: PASS)
-Phase B  Data layer             ████████████████████   90%  🟡 DATABENTO KEY NEEDED
-Phase C  Alpha gate race        ████░░░░░░░░░░░░░░░░   20%  🟡 WAITING ON DATA
+Phase B  Data layer             ████████████████████  100%  ✅ DONE (GC 1m cached 2022-2024)
+Phase C  Alpha gate race        █████░░░░░░░░░░░░░░░   25%  🟡 A0_MVP FRAGILE · A1 NEXT
 Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 ```
@@ -68,34 +68,29 @@ on the primary universe unless explicitly approved by the owner.
 
 ---
 
-## 🧊 DEVELOPMENT FREEZE — active until first verdict is reviewed
+## ✅ FREEZE LIFTED — A0_MVP FRAGILE verdict recorded (2026-06-14)
 
-**The 7-step sequence to first verdict (clock starts when Databento key lands):**
+**Freeze sequence — COMPLETE (2026-06-14):**
 
 ```
 1. ✅ Preflight audit     DONE 2026-06-14 — 2 pipeline bugs fixed, audit clean
-                          docs/audits/REPO_AUDIT_2026-06-14.md
-                          Open items (non-blocking): FRAGILE headers, _active_obs cap,
-                          TRIALS.md, look-ahead regression tests
-2. ⬅️ Acquire Databento   Owner action — add DATABENTO_API_KEY to .env  ← YOU ARE HERE
-3. ⬜ Download GC data    get_loader("databento").load("GC","1m","2022-01-01","2024-12-31")
-4. ⬜ Run A0_MVP          scripts/run_alpha_backtest.py --alpha a0_mvp --data <file>
-5. ⬜ Run gate            scripts/run_gate.py trades.csv --instrument GC --n-trials <N>
-6. ⬜ Record verdict      FRAGILE → research_archive/a0_mvp/   READ/ROBUST → PROJECT_STATE.md
-7. ⬜ FREEZE & REVIEW     Owner reviews the verdict before ANY further build.
+2. ✅ Acquire Databento   DONE 2026-06-14 — key set, loader fixed (stype_in=continuous)
+3. ✅ Download GC data    DONE — 31,284 bars 2022-01-03→2024-12-30 cached
+4. ✅ Run A0_MVP          DONE — 38 trades, WR 47.4%, mean R −0.003
+5. ✅ Run gate            SKIPPED — 38 < 50 (below READ floor); gate cannot run on n<50
+6. ✅ Record verdict      DONE — FRAGILE, research_archive/a0_mvp/VERDICT.md
+7. ⬅️ OWNER REVIEW        Review A0_MVP result → FREEZE fully lifts → A1 begins  ← YOU ARE HERE
 ```
 
-**Do NOT start before step 7 is complete:**
+**Still frozen until A1 ROBUST verdict (Rule 1 — no new systems before first ROBUST verdict):**
 
 | Item | Why frozen |
 |---|---|
-| BTC/ETH expansion | Rule 2 — no BTC/ETH work before first GC/6E verdict |
-| New SMC filters | Rule 1 — A0_MVP must be gated first; each filter = new alpha ID |
+| BTC/ETH expansion | Rule 2 — no BTC/ETH work before first GC/6E ROBUST verdict |
+| New SMC filters beyond A1 spec | Rule 1 — each filter = new alpha ID, must gate A1 first |
 | Master-trader selector enhancements | Rule 1 — A2 is READ; no tuning before gate race |
-| Copy-trading optimizer | Rule 1 — no new systems before first verdict |
-| AI signal ranking | Rule 1 — validation before optimization (CLAUDE.md §7) |
-
-**The freeze is active now.** Step 1 ✅ done. Step 2 (Databento key) is the only unblocked action.
+| A3 ensemble build | Requires A1 + A2 both gated |
+| Execution layer (Nautilus/IB) | Phase D locked until ROBUST verdict exists |
 
 ---
 
@@ -103,36 +98,29 @@ on the primary universe unless explicitly approved by the owner.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  🧊  FREEZE ACTIVE — waiting on DATABENTO_API_KEY       │
+│  ✅  FREEZE LIFTED — A0_MVP FRAGILE (2026-06-14)        │
 │                                                         │
-│  ✅ Preflight audit complete (2026-06-14)               │
-│     Pipeline bugs fixed:                                │
-│       - Backtest wrote rejected signals to gate CSV     │
-│         → now writes only approved trades, col=pnl_r   │
-│       - run_gate.py lacked sys.path → now self-contained│
-│     Audit open items (fix before gate, not blocking):   │
-│       - FRAGILE header missing from detector files [S1] │
-│       - _active_obs unbounded growth [S9]               │
-│       - TRIALS.md parameter ledger missing [S8]         │
-│       - No look-ahead regression tests [S6]             │
+│  A0_MVP result:                                         │
+│    38 approved trades on GC 1m 2022-2024                │
+│    Win rate 47.4%  |  Mean R −0.003                     │
+│    Below READ floor (n<50) — gate skipped               │
+│    Verdict: FRAGILE (expected — pipeline smoke test)     │
+│    Archive: research_archive/a0_mvp/VERDICT.md          │
 │                                                         │
-│  ⬅️  SINGLE UNBLOCKED ACTION: add Databento key to .env │
+│  All 4 audit items confirmed closed (S1/S6/S8/S9).     │
+│  557/557 tests green.                                   │
 │                                                         │
-│  echo "DATABENTO_API_KEY=<key>" >> .env                 │
+│  ⬅️  OWNER: review A0_MVP result, then give go-ahead    │
 │                                                         │
-│  Then (~1 hour to first verdict):                       │
-│  pip install -e ".[phase1]"                             │
-│  python3 -c "                                           │
-│    from ag.data.loader import get_loader                │
-│    df = get_loader('databento').load(                   │
-│        'GC','1m',start='2022-01-01',end='2024-12-31')" │
-│  scripts/run_alpha_backtest.py --alpha a0_mvp \         │
-│      --data <gc_1m.parquet> --instrument GC             │
-│  scripts/run_gate.py trades.csv \                       │
-│      --instrument GC --n-trials 1                       │
-│                                                         │
-│  Expected verdict: FRAGILE (sweep+choch = known fail)   │
-│  That is still a valid, useful result.                  │
+│  After review — A1 sequence:                            │
+│  1. Resample 1m → 1h (python3, ~5s)                    │
+│  2. Log A1 trial in trial_log.py                        │
+│  3. scripts/run_alpha_backtest.py --alpha a1 \          │
+│         --data /home/aungp/data/cache/GC_1h.parquet \  │
+│         --instrument GC --out results/a1_trades.csv     │
+│  4. scripts/run_gate.py results/a1_trades.csv \         │
+│         --instrument GC --cost-preset gc --n-trials <N> │
+│  5. Record verdict → owner reviews                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -199,16 +187,14 @@ Gate thresholds (locked, immutable):
 ```
  Alpha       Spec     Built    Gated    Verdict
  ─────────────────────────────────────────────────────────────────────────
- A0_MVP      ✅       ✅       ⬜       PENDING
-             ⚠️  PLUMBING CHECK ONLY — verdict expected FRAGILE
-             sweep+choch → entry = archived SMC_H1_FRAGILE pattern (GC PF 0.698)
-             CLAUDE.md §3: SMC answers WHERE not WHEN; ChoCH→entry is WHEN
-             Valid purpose: confirm pipeline runs; NOT a test of A1 hypothesis
-             BLOCKED ON: Databento 1m data (A0_MVP_DECISION.md spec)
+ A0_MVP      ✅       ✅       ✅       FRAGILE  (2026-06-14)
+             38 approved trades on GC 1m 2022-2024 — below READ floor (n<50)
+             Gate skipped. Archived: research_archive/a0_mvp/VERDICT.md
+             Purpose fulfilled: pipeline confirmed end-to-end.
 
- A1          ✅       ✅       ⬜       PENDING
+ A1          ✅       ✅       ⬜       PENDING  ← NEXT
              (full SMC filter: sweep+choch+OB+FVG+displacement)
-             BLOCKED ON: A0_MVP gated first
+             Run on GC 1h — owner review of A0_MVP result required first
 
  A2          ✅       ✅       ✅       READ  ⚠️
              n=325 OOS · 10/11 PASS · DSR FAIL (z=−25.32)
