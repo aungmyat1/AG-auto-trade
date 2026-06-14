@@ -88,8 +88,10 @@ class TestC3UTCIndex:
         assert any("C3" in e for e in r.errors)
 
     def test_warns_when_timezone_is_not_utc(self):
+        # Fixed UTC offset — non-UTC but needs no system tz database (portable in CI/sandboxes).
+        from datetime import timedelta, timezone
         df = _clean()
-        df.index = df.index.tz_convert("US/Eastern")
+        df.index = df.index.tz_convert(timezone(timedelta(hours=-5)))
         r = _check(df)
         assert any("C3" in w for w in r.warnings)
 
