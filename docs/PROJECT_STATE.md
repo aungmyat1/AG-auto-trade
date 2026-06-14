@@ -1,15 +1,26 @@
 # PROJECT STATE — live memory (read me first, keep me updated)
 
-Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
+Last updated: 2026-06-14 (Dispatch 6 complete — TRGS + preflight audit + pipeline fixes)
 
 ## Current Stage
 
-**Dispatch 4 complete. Phase A hardening done.** v4 build order position:
+**Phase A complete. Phase B loaders built. FREEZE active — waiting on Databento key.**
+v4 build order position:
 
 1. ✅ Validation core (gate, CPCV, purged WF, Monte Carlo, DSR, cost model) — 45 tests green
    - CPCV train-side purging: implemented (was cosmetically a no-op)
    - Lock-before-look consistency test: A4 added (`tests/unit/test_lock_before_look.py`)
      verifies gate.py ↔ config.py ↔ GATE_DECISION.md alignment on every CI run
+   - **TRGS built** (2026-06-14, PR #16) — 498 → 540 tests green
+     `ag/validation/edge_validator.py`: permutation test (10k shuffles), ≥10% outperformance threshold.
+     `ag/validation/readiness.py` (`TRGSDecisionEngine`): 6-state ladder:
+       NOT_READY → READY_FOR_BACKTEST → READY_FOR_PAPER → READY_FOR_SHADOW → READY_FOR_LIVE / BLOCKED.
+     BLOCKED supersedes all tiers (look-ahead, replay failure). READY_FOR_LIVE requires
+     `manual_override=True` — OWNER ONLY, never the agent.
+     `ag/validation/lock_before_look/TRGS_THRESHOLDS.md`: shadow tier (n≥500, DD<10%),
+     live tier (manual_override only) — pre-registered lock-before-look.
+     34 new tests: `test_edge_validator.py`, `test_readiness.py`.
+
 2. ✅ Platform — risk engine + regime classifier + tests; monitoring = Telegram stub;
    infrastructure/ + data/ populated (Phase B core built)
    - G5 leverage guard: **FIXED** — now a real check (`validate_entry(leverage=1.0)`)
@@ -30,6 +41,13 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
      Tests: `test_loader.py`, `test_integrity.py`, `test_ib_loader.py`, `test_roll.py`
      (498 pass, 17 skip — parquet roundtrip and ib_insync tests skip when deps absent).
      `pyproject.toml`: `pyarrow>=15.0` in dev; `databento>=0.35` + `ib_insync>=0.9` in phase1.
+   - **Pipeline preflight + bug fixes** (2026-06-14, PR #14):
+     Bug 1: backtest wrote ALL signals (approved + rejected) to gate CSV — now writes only
+       risk-approved trades with column renamed r_multiple → pnl_r.
+     Bug 2: `scripts/run_gate.py` lacked sys.path setup — now self-contained, no PYTHONPATH needed.
+     Preflight verified: backtest → gate pipeline runs end-to-end on synthetic data.
+     Repo audit (`docs/audits/REPO_AUDIT_2026-06-14.md`): PASS overall, 4 open WARNs (non-blocking).
+
 3. 🟡 Alpha modules:
    - A2: READ verdict (2026-06-12) — 10/11 criteria, DSR fail z=−25.32
    - A1: spec locked, detectors built, A1SmcMomentum wrapper built (not yet gated)
@@ -65,18 +83,17 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
   New: DatabentoLoader + IBHistoricalLoader (identical .load() API), check_ohlcv (shared),
   CME expiry/roll calendar, source-agnostic get_loader() factory, 99 new data tests;
   17 skips = parquet roundtrip + IB connection tests (need pyarrow/ib_insync/TWS)
-- 2026-06-14: replay-integrity suite (`ag/validation/replay_harness.py` + `tests/replay/`):
-  ReplayHarness (one closed bar at a time, no future access, deterministic, timestamp checks),
-  future_leak_free/repaint_free property checks — 43 pass + 1 xfail.
-  **FINDING LF-1**: LiquidityDetector still has a future-cluster look-ahead (liquidity.py:50-55)
-  that PR #14's prefix-lag tests MISS — caught only by future-poisoning. C3 tz test made
-  environment-portable. Added `docs/REALISTIC_OUTCOME.md` + `docs/SUCCESS_CRITERIA.md`.
-- 2026-06-14: **LF-1 FIXED** — LiquidityDetector clusters past-only and dates the pool at the
-  confirming swing (was: clustered with future equal-highs). 9/9 liquidity unit tests still pass,
-  still finds 9 pools; `future_leak_free`/`repaint_free` green; /smc-review PASS. Replay suite
-  xfail removed. Added Trading Readiness Gate System (TRGS, `ag/readiness/`) — composes the locked
-  gate/risk/replay into one fail-closed capital-deployment decision (562→ tests). Running it now
-  returns READY_FOR_BACKTEST (harness verified; no ROBUST verdict; no execution layer); never live.
+- 2026-06-14 (PR #14): backtest+gate pipeline bugs fixed; preflight verified end-to-end —
+  suite 498/498 green
+- 2026-06-14 (PR #16): TRGS added — edge_validator + TRGSDecisionEngine + TRGS_THRESHOLDS.md —
+  suite **540 passed, 17 skipped**
+- 2026-06-14 (PR #13): **LF-1 FIXED** — LiquidityDetector clusters past-only and dates the pool
+  at the confirming swing (was: clustered with future equal-highs). 9/9 liquidity tests pass,
+  still finds 9 pools, /smc-review PASS. **Replay-integrity suite** added
+  (`ag/validation/replay_harness.py` + `tests/replay/`): ReplayHarness + future_leak_free /
+  repaint_free — the future-poisoning check that CAUGHT LF-1 (PR #14's prefix-lag tests missed it).
+  Intended to feed TRGS's look-ahead/replay block. C3 tz test made portable. **v5 Bybit pivot
+  REJECTED** on corrected facts — `research_archive/rejected_bybit_pivot_v5/`.
 
 ## Known Gaps
 
@@ -95,40 +112,35 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
 | ~~No integration/backtest/e2e test directories~~ | ✅ Closed 2026-06-12 (Dispatch 5) |
 | ~~Databento data layer (loader + integrity + fixtures)~~ | ✅ Closed 2026-06-13 (Dispatch 6) |
 | ~~IB data layer missing~~ | ✅ Closed 2026-06-13 (Dispatch 6) |
-| pyarrow not installed | `pip install -e ".[dev]"` unblocks 17 parquet/IB tests |
-| ib_insync not installed | `pip install -e ".[phase1]"` needed for IB downloads |
-| No IB account / TWS not configured | Set `IB_HOST/PORT` in `.env` (see `.env.ib.example`) |
-| Databento API key not set | Add `DATABENTO_API_KEY` to `.env` to enable DB downloads |
-| CPCV/WF train-side purge scores only OOS | By design (no per-fold refit on static series) |
-| Lock-before-look loader missing | Gate thresholds hardcoded in gate.py; loader is the A4 test |
-| **[AUDIT S1]** FRAGILE header missing from SMC detector files | Add to `detectors/{liquidity,order_block,fvg,bos_choch}.py` + `pipeline.py` — P1 |
-| **[AUDIT S9]** `_active_obs` list unbounded | Cap at 50 in `a1_alpha.py:77` — P2 |
-| **[AUDIT S8]** No `TRIALS.md` parameter ledger | Create `ag/alpha/a1_smc_momentum/TRIALS.md` — P3 |
-| ~~**[AUDIT S6]** No look-ahead regression tests for SMC detectors~~ | ✅ Closed 2026-06-14 — `tests/replay/` future-poisoning + repaint suite covers all 5 detectors |
-| ~~**LF-1** LiquidityDetector future-cluster look-ahead~~ | ✅ Closed 2026-06-14 — past-only clustering, level dated at confirming swing; `future_leak_free` green; /smc-review PASS |
-| **[AUDIT R7-R9]** No unit tests for cpcv/walk_forward/monte_carlo/a1_alpha.propose()/historical | Deferred until post-verdict |
+| ~~Backtest CSV included rejected signals~~ | ✅ Closed 2026-06-14 (PR #14 preflight fix) |
+| ~~run_gate.py missing sys.path — failed without PYTHONPATH~~ | ✅ Closed 2026-06-14 (PR #14) |
+| ~~No TRGS / deployment readiness firewall~~ | ✅ Closed 2026-06-14 (PR #16) |
+| ~~**[AUDIT S6]** No look-ahead regression tests for SMC detectors~~ | ✅ Closed 2026-06-14 (PR #13) — `tests/replay/` future-poisoning + repaint suite, all 5 detectors |
+| ~~**LF-1** LiquidityDetector future-cluster look-ahead~~ | ✅ Closed 2026-06-14 (PR #13) — past-only clustering; `future_leak_free` green; /smc-review PASS |
+| **`DATABENTO_API_KEY` not set** | 🔴 ONLY BLOCKER — `echo "DATABENTO_API_KEY=<key>" >> .env` |
+| **[AUDIT S1]** FRAGILE header missing from SMC detector files | Fix before gate run — `detectors/{order_block,fvg,bos_choch}.py` + `pipeline.py` (liquidity done) |
+| **[AUDIT S9]** `_active_obs` list unbounded | Fix before gate run — cap at 50 in `a1_alpha.py:77` |
+| **[AUDIT S8]** No `TRIALS.md` parameter ledger | Fix before gate run — create `ag/alpha/a1_smc_momentum/TRIALS.md` |
+| pyarrow not installed | Low — `pip install -e ".[dev]"` → 17 tests green |
+| ib_insync not installed | Low — `pip install -e ".[phase1]"` |
+| No unit tests for cpcv/walk_forward/monte_carlo | Deferred post-verdict (Audit R7-R9) |
+| CPCV/WF train-side purge scores only OOS | By design |
 
 ## Next Goal
 
-Phase B — first download (IB path, cheapest + immediate):
-  1. Install deps: `pip install -e ".[dev]" && pip install -e ".[phase1]"`
-  2. Start TWS or IB Gateway (paper account fine). Copy `.env.ib.example` → `.env`, set port.
-  3. Pull 6–12 months of GC + 6E 1h bars (one request each, fits within IB pacing):
-     ```python
-     from ag.data.loader import get_loader
-     loader = get_loader("ib")
-     df = loader.load("GC", "1h", start="2024-01-01", end="2024-12-31")
-     ```
-  4. Run integrity check: `from ag.data.ib_live import check_ohlcv; print(check_ohlcv(df,"GC","1h").summary())`
-  5. Pull 1m bars for A0_MVP backtest (chunked — IB enforces 180D per request, loader handles pacing)
-  6. Re-run tests — 17 skips should drop to 0 once pyarrow + ib_insync are installed
-  7. Log A0_MVP trial in `trial_log.py`, run `scripts/run_alpha_backtest.py --alpha a0_mvp`
-  8. Verify signal rate ≥ 1/20 bars. If not → lower swing_lookback, re-log trial.
-  9. Gate A0_MVP: `scripts/run_gate.py trades.csv --instrument GC --n-trials <from log>`
-  10. If A0_MVP ROBUST → add filters one at a time (each = new alpha ID + new decision file)
+**FREEZE active — 7-step sequence to first verdict:**
 
-Databento upgrade path (when deeper history needed):
-  - Add `DATABENTO_API_KEY` to `.env`; switch `get_loader("databento")`; same alpha code
+  Single unblocked owner action: `echo "DATABENTO_API_KEY=<key>" >> .env`
+
+  Then (~1 hour to first verdict, once key is set):
+  1. `pip install -e ".[phase1]"`
+  2. `python3 -c "from ag.data.loader import get_loader; get_loader('databento').load('GC','1m','2022-01-01','2024-12-31')"`
+  3. Fix 4 open audit items (S1 FRAGILE headers, S9 _active_obs cap, S8 TRIALS.md, S6 look-ahead tests)
+  4. Log A0_MVP trial in `trial_log.py`; `scripts/run_alpha_backtest.py --alpha a0_mvp --data <gc_1m.parquet>`
+     → Expected FRAGILE (sweep+choch = archived SMC_H1_FRAGILE pattern); do NOT tune if FRAGILE
+  5. `scripts/run_gate.py trades.csv --instrument GC --n-trials <count from trial_log.py>`
+  6. Record verdict in research_archive/ (if FRAGILE) or here (if READ/ROBUST)
+  7. Owner reviews the verdict → FREEZE lifts on that step only
 
 ## Update Protocol
 
