@@ -91,10 +91,15 @@ v4 build order position:
 - 2026-06-14 (PR #18): Databento loader fix (`stype_in=continuous`) — 557/557 green (17 skips resolved)
   GC 1m downloaded: 31,284 bars 2022-01-03→2024-12-30 cached to `/home/aungp/data/cache/GC_1m.parquet`
   v5 Bybit roadmap parked: `research_archive/deferred/bybit_smc_v5_roadmap.md`
+- 2026-06-14 (PR #13): **LF-1 FIXED** — LiquidityDetector clusters past-only and dates the pool
+  at the confirming swing (was: clustered with future equal-highs). 9/9 liquidity tests pass,
+  still finds 9 pools, /smc-review PASS. **Replay-integrity suite** added
+  (`ag/validation/replay_harness.py` + `tests/replay/`): ReplayHarness + future_leak_free /
+  repaint_free — the future-poisoning check that CAUGHT LF-1. C3 tz test made portable.
+  **v5 Bybit pivot REJECTED** on corrected facts — `research_archive/rejected_bybit_pivot_v5/`.
 - 2026-06-14 (A0_MVP run): 38 approved trades, WR 47.4%, mean R −0.003
   FRAGILE (below READ floor n<50, gate skipped). Pipeline confirmed end-to-end.
-  All 4 audit items confirmed closed (S1/S6/S8/S9 fixed in earlier PRs).
-  Archived: `research_archive/a0_mvp/VERDICT.md`
+  All 4 audit items confirmed closed (S1/S6/S8/S9). Archived: `research_archive/a0_mvp/VERDICT.md`
 
 ## Known Gaps
 
@@ -117,10 +122,11 @@ v4 build order position:
 | ~~run_gate.py missing sys.path — failed without PYTHONPATH~~ | ✅ Closed 2026-06-14 (PR #14) |
 | ~~No TRGS / deployment readiness firewall~~ | ✅ Closed 2026-06-14 (PR #16) |
 | ~~`DATABENTO_API_KEY` not set~~ | ✅ Closed 2026-06-14 (PR #18) — 31,284 GC bars cached |
-| ~~[AUDIT S1] FRAGILE header missing from SMC detector files~~ | ✅ Closed — all detector files confirmed with FRAGILE headers |
-| ~~[AUDIT S9] `_active_obs` list unbounded~~ | ✅ Closed — capped at 50 in `a1_alpha.py` |
+| ~~[AUDIT S1] FRAGILE header missing from SMC detector files~~ | ✅ Closed 2026-06-14 (PR #13) — displacement header added; all other detectors already had it |
+| ~~[AUDIT S9] `_active_obs` list unbounded~~ | ✅ Closed — capped at 50 in `a1_alpha.py:87-88` |
 | ~~[AUDIT S8] No `TRIALS.md` parameter ledger~~ | ✅ Closed — `ag/alpha/a1_smc_momentum/TRIALS.md` exists, A0_MVP trial logged |
-| ~~[AUDIT S6] No look-ahead regression tests for SMC detectors~~ | ✅ Closed (PR #14) — `tests/unit/smc/test_no_lookahead.py` covers all 4 detectors |
+| ~~[AUDIT S6] No look-ahead regression tests for SMC detectors~~ | ✅ Closed 2026-06-14 (PR #13) — `tests/replay/` future-poisoning + repaint suite, all 5 detectors |
+| ~~LF-1 LiquidityDetector future-cluster look-ahead~~ | ✅ Closed 2026-06-14 (PR #13) — past-only clustering; `future_leak_free` green; /smc-review PASS |
 | ~~pyarrow not installed~~ | ✅ Closed 2026-06-14 (PR #18 install) |
 | ~~ib_insync not installed~~ | ✅ Closed 2026-06-14 (PR #18 install) |
 | No unit tests for cpcv/walk_forward/monte_carlo | Deferred post-verdict (Audit R7-R9) |
