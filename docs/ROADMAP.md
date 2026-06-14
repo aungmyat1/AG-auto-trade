@@ -37,7 +37,7 @@
 ```
 Phase A  Platform hardening     ████████████████████  100%  ✅ DONE  (audit 2026-06-14: PASS)
 Phase B  Data layer             ████████████████████  100%  ✅ DONE (GC+6E 1h+1m 2020-2024)
-Phase C  Alpha gate race        ████████░░░░░░░░░░░░   40%  🟡 A0+A1 ran · A1 verdict pending
+Phase C  Alpha gate race        ████████░░░░░░░░░░░░   40%  🟡 A0 FRAGILE · A1_WHERE_ONLY UNSCOREABLE · A2 next
 Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 ```
@@ -110,34 +110,30 @@ FRAGILE verdict and the Bybit pivot was rejected on corrected facts
 ## ══════════════ YOU ARE HERE ══════════════
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  ⬅️  OWNER DECISION REQUIRED — A1 verdict               │
-│                                                         │
-│  A1 backtest results (2026-06-14):                      │
-│                                                         │
-│  GC 1h 2020-2024 (5yr):                                │
-│    50 signals → 33 approved                             │
-│    Win rate 66.7%  |  Mean R +0.059                     │
-│    Below READ floor (n<50) — gate cannot run            │
-│                                                         │
-│  6E 1h 2020-2024 (5yr):                                 │
-│    282 signals → 3 approved  ⚠️ ARTIFACT                │
-│    Stateful risk-engine locked from 2020 COVID           │
-│    volatility — not a valid signal count                 │
-│                                                         │
-│  Trials logged: A0_MVP×1  A1×2  (trial_log.jsonl)      │
-│  603/603 tests green. LF-1 fixed. Data cached.          │
-│                                                         │
-│  HONEST READ: A1 fires ~10 signals/year on GC H1.      │
-│  Even on 5 years, n<50. Edge too rare to gate on        │
-│  available CME H1 data — not a quality failure          │
-│  (GC WR 66.7% is promising) but a frequency one.        │
-│                                                         │
-│  Owner options:                                         │
-│  A) Archive A1 FRAGILE → A2 carries the race           │
-│  B) Trial 3: test displacement-removal as a             │
-│     'does it add value?' hypothesis (not a rescue)      │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  Option C — A1_WHERE_ONLY UNSCOREABLE                        │
+│  Decided 2026-06-14 after spec↔code audit                    │
+│                                                              │
+│  What ran as "A1" is A1_WHERE_ONLY (WHERE filter only;       │
+│  WHEN trigger MT1/MT2/MT3 was never implemented).            │
+│                                                              │
+│  Results on GC 1h 2020-2024 (5yr):                          │
+│    50 signals → 33 approved                                  │
+│    Win rate 66.7%  |  Mean R +0.059                          │
+│    n=33 < 50 → UNSCOREABLE (edge too rare to gate)           │
+│                                                              │
+│  6E: 3 approved — risk-engine artifact (not valid count)     │
+│                                                              │
+│  Decision:                                                   │
+│    • A1_WHERE_ONLY → UNSCOREABLE (per A1_WHERE_ONLY_DECISION)│
+│    • Full A1 spec (§1 WHERE+WHEN) stays LOCKED, NOT BUILT    │
+│      — requires fresh unseen window to gate honestly         │
+│    • A2 (READ, n=325 OOS) carries the race per Rule 2        │
+│    • A3 can build once A2 + A1 are both verdicted            │
+│                                                              │
+│  608/608 tests green. Trial floor n_trials=23.               │
+│  Next: A2 formal gate → A3 → Phase D locked until ROBUST.   │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -202,11 +198,15 @@ Gate thresholds (locked, immutable):
              Gate skipped. Archived: research_archive/a0_mvp/VERDICT.md
              Purpose fulfilled: pipeline confirmed end-to-end.
 
- A1          ✅       ✅       ⬜       VERDICT PENDING  ← OWNER DECISION
-             GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 (below READ floor n<50)
-             6E 1h 5yr: 3 approved (backtest artifact — stateful risk-engine from 2020)
-             Trials: 2 logged. Signal rate ~10/yr on GC H1 — too rare to gate as-is.
-             Options: A) archive FRAGILE → A2 carries  B) trial 3 displacement-removal
+ A1 (full)   ✅       ❌       ⬜       NOT BUILT
+             §1 WHERE+WHEN (≥3-of-4 Z1-Z4 + ≥2-of-3 MT1-MT3) was never implemented.
+             Locked spec untouched — requires fresh unseen window to gate honestly.
+             CI conformance test pins the drift: tests/unit/test_a1_spec_conformance.py
+
+ A1_WHERE_ONLY ✅     ✅       ✅       UNSCOREABLE  (2026-06-14)
+             GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 — n<50, gate cannot run
+             6E 1h 5yr: 3 approved (risk-engine artifact, not valid). n_trials=23.
+             Freq limit, not quality failure. Archived: A1_WHERE_ONLY_DECISION.md
 
  A2          ✅       ✅       ✅       READ  ⚠️
              n=325 OOS · 10/11 PASS · DSR FAIL (z=−25.32)
@@ -223,14 +223,14 @@ Gate thresholds (locked, immutable):
  DONE  A0_MVP (2026-06-14) — FRAGILE · 38 trades GC 1m 2022-24 · below floor
        Archive: research_archive/a0_mvp/VERDICT.md · 1 trial logged
 
- DONE  A1 backtest (2026-06-14) — verdict PENDING OWNER DECISION
-       GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 (below READ floor)
-       6E 1h 5yr: 3 approved (risk-engine artifact, not valid)
-       Signal rate too rare (~10/yr GC H1) — 2 trials logged
-       Next: owner decides A) archive FRAGILE  B) trial 3 displacement-removal
+ DONE  A1_WHERE_ONLY (2026-06-14) — UNSCOREABLE · spec↔code audit → Option C
+       GC 1h 5yr: n=33<50 · WR 66.7% (freq limit, not quality failure)
+       Full A1 §1 (WHERE+WHEN) = NOT BUILT, locked for fresh window
+       A1_WHERE_ONLY_DECISION.md committed · n_trials=23 · IS_CUTOFF=2022-12-30
+       Conformance test pinned: test_a1_spec_conformance.py · 608 tests green
 
- NEXT  A2 formal gate — if A1 archived; A2 (READ, n=325) carries the race
-       Requires: owner decision on A1 first
+ NEXT  A2 formal gate — A2 (READ, n=325 OOS) carries the race per Rule 2
+       A1_WHERE_ONLY archived UNSCOREABLE; A2 is the active candidate
 
  LAST  A3 ensemble gate — needs A1 + A2 both gated
 
