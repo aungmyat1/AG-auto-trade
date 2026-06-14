@@ -159,17 +159,18 @@ def run_backtest(
     return trades
 
 
-def _write_trades_csv(trades: List[dict], out_path: pathlib.Path) -> None:
-    if not trades:
-        print("No trades generated.", file=sys.stderr)
+def _write_gate_csv(approved_trades: List[dict], out_path: pathlib.Path) -> None:
+    """Write gate-ready CSV: only risk-approved trades, column named pnl_r."""
+    if not approved_trades:
+        print("No approved trades to write.", file=sys.stderr)
         return
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = list(trades[0].keys())
     with out_path.open("w", newline="", encoding="utf-8") as fh:
-        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer = csv.DictWriter(fh, fieldnames=["pnl_r"])
         writer.writeheader()
-        writer.writerows(trades)
-    print(f"Wrote {len(trades)} trades → {out_path}")
+        for t in approved_trades:
+            writer.writerow({"pnl_r": t["r_multiple"]})
+    print(f"Wrote {len(approved_trades)} approved trades → {out_path}")
 
 
 def main() -> None:
@@ -218,8 +219,8 @@ def main() -> None:
         print(f"Win rate: {wins/len(r_multiples):.1%} | "
               f"Mean R: {sum(r_multiples)/len(r_multiples):.3f}")
 
-    # Write CSV
-    _write_trades_csv(trades, pathlib.Path(args.out))
+    # Write gate-ready CSV (approved trades only, pnl_r column)
+    _write_gate_csv(approved, pathlib.Path(args.out))
 
     if len(approved) < 50:
         print(
