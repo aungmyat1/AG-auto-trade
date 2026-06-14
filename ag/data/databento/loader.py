@@ -159,6 +159,7 @@ class DatabentoLoader:
         data = client.timeseries.get_range(
             dataset=DATASET,
             symbols=[_DB_SYMBOL[symbol]],
+            stype_in="continuous",
             schema=_DB_SCHEMA[timeframe],
             start=start,
             end=end,
