@@ -1,80 +1,88 @@
 # AG Auto-Trade — Realistic Outcome Assessment
 
-> Honest version. Built from the system's actual code and validation record, not generic optimism.
-> Companion to `docs/ROADMAP.md`. Last updated: 2026-06-14.
+> Purpose: keep expectations objective and prevent goal drift (validation platform → "profitable
+> bot quickly"). Companion to `docs/ROADMAP.md` and `docs/SUCCESS_CRITERIA.md`. Updated 2026-06-14.
 
 ## One-line summary
 
-You are ~90% of the way to owning a **rigorous strategy-validation machine**. You are **0% of the
-way to a proven profitable SMC bot** — because that question has not been answered yet, and the
-evidence so far says *be skeptical*.
+The platform (~90% built) is a **strategy-validation system**. Whether SMC has a robust, tradable
+edge on gold futures is **not yet determined** — current evidence does not demonstrate one, and the
+gate will confirm or reject it on real data.
 
-## What is actually built today (real, verifiable)
+---
 
-- A locked statistical **validation gate** (CPCV, walk-forward, Monte-Carlo, Deflated-Sharpe,
-  net-of-cost) — pre-registered so thresholds can't be fudged after seeing data.
-- A non-bypassable **6-guard risk engine** (0.5%/trade, 2% daily, 6% weekly, 15% max drawdown).
-- **SMC detectors** (order block, FVG, BOS/ChoCH, liquidity sweep, displacement) — used as a
-  *context filter only*, never as an entry signal.
-- A **data layer** (Databento + Interactive Brokers loaders) — built, but the cache is empty;
-  no real bars yet.
-- **498 passing tests.** Platform phase complete.
+## Observed facts
 
-This part is genuine and valuable regardless of whether SMC works.
+- Prior SMC backtests have not passed rigorous validation: SMC H1 (crypto) **FRAGILE**
+  (CPCV 0.92, MC 0.89); SMC 5-minute (crypto) **FAIL** (PF 0.08); SMC on EURUSD/XAUUSD H1/H4
+  **FAIL** (PF 0.70–0.89).
+- The master-trader copy (A2) scored **READ, not ROBUST** — strong raw metrics (PF 3.7,
+  Sharpe 6.3) but failed the Deflated-Sharpe multiple-testing check (z = −25).
+- No SMC strategy has yet been tested on **GC futures** data (the target instrument).
+- Platform: validation gate, 6-guard risk engine, SMC detectors, data layer — **498 tests green**.
 
-## The question that is NOT yet answered
+## Assumptions
 
-**Does SMC actually make money on gold futures (GC), net of costs, out of sample?**
+- Realistic CME costs (commission + spread + slippage) materially affect net results — modeled.
+- GC behaves differently enough from crypto/spot-FX that prior negatives are **not** dispositive
+  for GC; they set a skeptical prior, not a conclusion.
+- Multi-year, multi-regime 1m data (Databento) is required for the gate's CPCV/WF to be meaningful.
 
-No SMC strategy has been tested on this data yet. What we *do* have is prior evidence, and it is
-not encouraging:
+## Hypotheses (to be tested, not assumed)
 
-| Prior test | Result |
-|---|---|
-| SMC H1 (crypto) | **FRAGILE** — failed resampling (CPCV 0.92, Monte-Carlo 0.89) |
-| SMC 5-minute (crypto) | **FAIL** — profit factor 0.08 |
-| SMC on EURUSD / XAUUSD (H1, H4) | **FAIL** — PF 0.70–0.89 |
-| Master-trader copy (A2) | **READ, not deployable** — looked great (PF 3.7) but failed the overfitting check (DSR z = −25) |
+- **H1 (A1):** SMC as a *WHERE* filter + a momentum/delta *WHEN* trigger produces a robust,
+  net-of-cost edge on GC. **Untested.**
+- **H0 (A0_MVP):** sweep+ChoCH→entry is a *plumbing* check only; expected FRAGILE (it is the
+  archived SMC_H1 pattern). Confirms the pipeline runs; tests nothing about H1.
 
-Every rigorous SMC test to date has either failed or been demoted. That is the honest prior.
+## Success criteria
 
-## Realistic outcomes (informed estimate, not a guarantee)
+The bar is the **locked, immutable gate** (`GATE_DECISION.md`), not any later-chosen number:
+n ≥ 200 net trades · net PF > 1.25 · Sharpe > 1.2 · win rate > 45% · max DD < 15% ·
+CPCV median PF > 1.0 · WF pass ≥ 60% · MC 5th-pct PF > 0.9 · DSR z > 0.
+Promotion gates beyond the backtest live in `docs/SUCCESS_CRITERIA.md`.
 
-When the first real gate runs on GC data, the most likely results are:
+---
 
-- **~65–75% — No robust edge** (FRAGILE/READ). You get a *validated "no"*: SMC doesn't survive on
-  gold, and you learned it for the price of a backtest, not a blown account.
-- **~20–30% — Marginal** (passes READ, fails ROBUST). Not deployable alone; might contribute to an
-  ensemble.
-- **~5–10% — Robust edge found.** Then: 30-day dry-run → 30-day shadow → tiny live pilot
-  ($100 → $1,000). Even here, live performance is usually *thinner* than backtest.
+## Four possible outcomes (prepare for all)
 
-These odds reflect (a) this project's own track record, (b) the base rate for retail SMC strategies,
-and (c) a deliberately strict gate. They are not pessimism — they are the reason validation was
-built first.
+| Outcome | Result | What it means |
+|---------|--------|---------------|
+| **A** | Profitable SMC strategy | An alpha clears ROBUST → dry-run → shadow → small live. Best case; treat live edge as thinner than backtest. |
+| **B** | Platform succeeds, SMC fails | Gate works; SMC shows no robust edge on GC. The validation engine stands, ready for the next strategy. **Most consistent with the current prior.** |
+| **C** | SMC works only in specific regimes | Edge appears in (e.g.) EXPANSION but not CHOP. Regime-gated deployment, smaller scope — needs its own validation. |
+| **D** | Hypothesis rejected | SMC does not survive on GC in any regime. A clean, well-evidenced "no" — achieved without risking capital. |
 
-## Realistic timeline
+The roadmap and gate are built to handle **all four** — none is a project failure; only deploying
+an unvalidated strategy would be.
 
-- **First verdict:** days-to-weeks *after* data access is connected (currently the only blocker —
-  needs the owner's Databento key or an IB session).
-- **Any live trading (if something passes):** ~2–3 months minimum (dry-run + shadow + pilot ramp).
-- **Multi-strategy platform / portfolio scanner / SaaS / AI quant:** 1–2+ years, and **contingent on
-  first finding any edge at all.**
+---
 
-## What it will be — and won't be
+## Assets produced regardless of strategy outcome
 
-**Will be:** a reusable, auditable trading *operating system* where SMC is the first plug-in
-strategy, and a machine that tells you the truth about any future strategy idea cheaply.
+Even under outcome B/D, the project still owns reusable infrastructure (status as of 2026-06-14):
 
-**Will not be (near-term):** a money-printing bot, a guaranteed profit, a multi-exchange crypto
-platform, or a SaaS business. Those require a proven edge that does not yet exist.
+| Asset | Status | Note |
+|-------|--------|------|
+| Verification framework (CPCV·WF·MC·DSR·cost) | ✅ Built | **The core asset** — tests *any* strategy |
+| Risk engine (6 non-bypassable guards) | ✅ Built | Instrument-agnostic |
+| Data connectors (Databento + IB) | ✅ Built | CME futures — *not* crypto exchange connectors |
+| Backtest / replay harness | ✅ Built | Bar-by-bar replay → trades CSV |
+| SMC detector library | ✅ Built | Reusable WHERE-filter components |
+| Regime classifier | ✅ Built | 4-regime context |
+| Monitoring (Telegram) | 🟡 Stub | Expand at deployment |
+| Trade journal / state machine | ⬜ Phase D | Built only after a ROBUST verdict |
+| Optimization pipeline | ⛔ Deferred | Intentionally *not* pre-gate (validation before optimization) |
 
-## The reframe that's actually true
+## What it will not be (near-term)
 
-The valuable asset here is **not "an SMC bot."** It's the **validation engine** — the thing that
-will save you from deploying strategies that look good and lose money. If SMC fails the gate
-(likely), that is the system *working*, not failing. The first profitable, *survivable* strategy you
-ever run live — SMC or otherwise — will be worth more than ten that merely looked good in a backtest.
+A guaranteed profit, a money-printing bot, a multi-exchange crypto platform, or a SaaS business.
+Those require a proven edge that does not yet exist.
 
-> **Most honest framing:** *"I'm building a machine that decides whether trading strategies are real.
-> SMC is the first one it will judge. The probable answer is no — and that's a result worth having."*
+## The reframe that holds regardless of outcome
+
+The asset is the **validation engine**, not any single strategy. A profitable strategy can stop
+working; a validation framework can test hundreds. The most valuable milestone right now is **not**
+proving SMC works — it is proving the framework can reliably decide whether *any* strategy works.
+Once that is solid, SMC, trend-following, mean-reversion, or future AI-generated strategies all run
+through the same infrastructure.
