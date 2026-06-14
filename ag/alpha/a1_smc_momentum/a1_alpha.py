@@ -1,7 +1,9 @@
 """A1 SMC Momentum Alpha Module.
 
-Entry logic: liquidity sweep → structure break (CHOCH/BOS) → entry.
-Optional gates: OB zone, FVG, displacement (add one at a time; measure
+Entry logic: liquidity sweep (WHERE) → momentum trigger (WHEN) → entry.
+For A0_MVP the WHEN trigger is ChoCH/BOS (sweep+choch config, expected FRAGILE).
+For A1 the WHEN trigger is ≥2-of-3 momentum conditions; ChoCH is WHERE context only.
+Optional WHERE gates: OB zone, FVG, displacement (add one at a time; measure
 each filter's impact on trade count before keeping it).
 
 Design principle — cure the 1-trade-per-363-pair-day failure mode:
@@ -81,6 +83,9 @@ class A1SmcMomentum(AlphaModule):
             det = OrderBlockDetector(atr_window=self._config.atr_window)
             self._active_obs = det.mark_mitigated(self._active_obs, df)
         self._active_obs = [ob for ob in self._active_obs if not ob.mitigated]
+        # Cap to most-recent 50 unmitigated OBs to bound memory on multi-year data
+        if len(self._active_obs) > 50:
+            self._active_obs = self._active_obs[-50:]
 
         # ── Phase B MVP: sweep required ────────────────────────────────────
         if not result.sweeps:
