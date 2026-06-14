@@ -234,3 +234,39 @@ rescue a FRAGILE verdict is BANNED.
   WHERE spec references docs/validation/FILTERED_SMC_DECISION.md (unchanged).
   WHEN = ≥2-of-3 of {MT1: engulfing/pin, MT2: RSI divergence, MT3: EMA8 slope}.
   T3/T4 (volume + delta) excluded until CME data available.
+
+- 2026-06-14: **DATA AVAILABLE — A1 gate run UNBLOCKED.** §0 (BLOCKED) is superseded per its own
+  instruction (amend, do not modify §0). GC continuous 1m 2022-01-03→2024-12-30 cached (GLBX.MDP3);
+  the A0_MVP plumbing run completed FRAGILE (38<50; a *different* alpha, not A1). The locked bar (§6),
+  trial floor (§5 = 14), net-of-cost model (§4), and alpha design (§1) are **UNCHANGED**. A1 may now
+  be gated against this spec on GC + MGC + 6E.
+
+---
+
+## §9 — VERDICT-READING RULE (per-instrument; locked 2026-06-14, BEFORE the A1 run)
+
+Read the A1 gate output against THIS rule. Do not decide pass/fail after seeing numbers.
+
+1. **Three separate runs.** GC, MGC, 6E are each gated independently — each has its OWN trade
+   series, chronological IS/OOS split (§3), net-of-cost model (`CostModel.for_gc()` / `.for_6e()`;
+   MGC = micro-gold economics), realized trial count (floor 14, §5), and verdict. Resample 1m→1h
+   first — A1 is an H1 strategy.
+2. **No pooling to reach n.** A per-instrument result with OOS n<50 is **FRAGILE for that
+   instrument** — never rescued by merging another instrument's trades into one curve (§3, extended
+   to verdicts). Low n is fixed by more **years**, never by combining instruments or loosening a
+   filter (see ROADMAP "A1 selectivity guard").
+3. **Gold (GC/MGC) vs euro (6E).** GC and MGC share the gold underlying (MGC = 1/10 GC). They may be
+   combined into ONE gold verdict **only if** declared in advance AND cost-modeled per-contract — and
+   that combination is **+1 trial**. Default = separate. 6E is **always** separate from gold.
+4. **Per-instrument thresholds = §6 exactly (immutable):** FRAGILE if OOS n<50 or any floor check
+   fails; READ if OOS n≥50, gross PF>1.0, and the MARGINAL test passes (beats unfiltered baseline OOS);
+   ROBUST only if OOS **n≥200** AND all nine checks pass **net-of-cost** at the honest trial count
+   (incl. **Deflated Sharpe z>0**).
+5. **Cross-instrument multiple testing (deflation).** Report ALL THREE verdicts together in
+   `A1_GATE_RESULT.md` (pre-committed), each on its own trial floor. Reporting only the instrument
+   that happened to pass = cherry-picking; in that case the surviving claim's DSR trial count must be
+   multiplied by the number of instruments searched (×3). The honest path avoids the penalty by
+   reporting every instrument, pass or fail.
+6. **Headline.** "A1 ROBUST" may be claimed only when **≥1 instrument is ROBUST on its own ≥200 OOS
+   net trades**. FRAGILE instruments → `research_archive/` with a header (never re-promoted, §7).
+   A1 advances to A3 / paper on its best per-instrument verdict; the freeze advances only on a ROBUST.
