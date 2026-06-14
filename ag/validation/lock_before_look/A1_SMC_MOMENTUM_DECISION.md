@@ -241,6 +241,15 @@ rescue a FRAGILE verdict is BANNED.
   trial floor (§5 = 14), net-of-cost model (§4), and alpha design (§1) are **UNCHANGED**. A1 may now
   be gated against this spec on GC + MGC + 6E.
 
+- 2026-06-14: **§1 IS NOT BUILT.** Pre-gate code audit (2026-06-14) found that the implemented
+  `A1SmcMomentum` code does NOT satisfy §1 of this spec. The built code omits the WHEN trigger
+  (MT1/MT2/MT3, ≥2-of-3) entirely, omits Z4 Fib levels, replaces Z4 with FVG, omits the regime
+  gate, and omits the ATR floor. It also contains five numeric parameters not pre-committed here.
+  **This spec (§1 WHERE+WHEN) remains locked and untouched as a future hypothesis — it requires
+  a fresh, held-out data window to be validly gated.** The built code is gated separately under
+  `A1_WHERE_ONLY_DECISION.md` with its own n_trials floor (23). §9 verdict-reading rule applies
+  to both.
+
 ---
 
 ## §9 — VERDICT-READING RULE (per-instrument; locked 2026-06-14, BEFORE the A1 run)
