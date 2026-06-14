@@ -16,7 +16,7 @@ used for any A1/A2/A3 gate evaluation. See `docs/validation/G1_DATA_READINESS.md
 
 | Alpha  | Status     | Trades (n) | Net PF | Verdict | Notes |
 |--------|------------|------------|--------|---------|-------|
-| A0_MVP | NOT TESTED | —          | —      | PENDING | Sweep+ChoCH only (Phase B MVP); spec locked `A0_MVP_DECISION.md` |
+| A0_MVP | TESTED     | 38         | —      | **FRAGILE** | Sweep+ChoCH plumbing check; 38<50 READ floor → gate skipped; do not tune. `research_archive/a0_mvp/VERDICT.md` |
 | A1     | NOT TESTED | —          | —      | PENDING | SMC-filter + momentum/delta; spec locked `A1_SMC_MOMENTUM_DECISION.md` |
 | A2     | TESTED     | 325 (OOS)  | 3.745  | **READ (OPTIMISTIC)** | Master-trader copy; DSR fails (z=−25.32); 10/11 pass. See `docs/validation/A2_GATE_RESULT.md` |
 | A3     | NOT TESTED | —          | —      | PENDING | Ensemble (A1×0.4 + regime×0.3 + A2×0.3 > 0.75); spec locked + skeleton built `A3_ENSEMBLE_DECISION.md` |

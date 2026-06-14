@@ -50,21 +50,24 @@ new SMC variants · new master-trader intelligence · new instruments.
 
 The purpose: prevent scope expansion before evidence exists.
 
-### Rule 2 — Instrument Escalation Path
+### Rule 2 — Fallback Path (futures-only; crypto is a closed door)
 
-Primary research instruments: **GC · MGC · 6E** (CME futures).
+Primary — and only approved — research universe: **GC · MGC · 6E** (CME futures),
+per-instrument models, GC primary.
 
-These remain the only approved research universe until a real gate verdict exists.
+If A1 fails to achieve ROBUST on the primary universe, the approved fallbacks are,
+in order, **on the same futures universe**:
 
-If A0_MVP and subsequent alphas fail to achieve ROBUST on the primary universe,
-the next approved expansion path is:
+1. **A2** (master-trader copy) — currently READ; race it net-of-cost in its own right.
+2. **A3** (ensemble: A1 × regime × A2) — once its components are gated.
+3. **More futures data** — full multi-year GC + MGC + 6E to lift trade count toward the
+   n≥50 floor / n≥200 ROBUST. The n problem is fixed by data, **never by loosening a filter**.
 
-1. BTCUSD
-2. ETHUSD
-
-Objective: faster hypothesis testing and higher signal frequency — not replacement of
-the primary universe. No BTC/ETH infrastructure work begins before the first real verdict
-on the primary universe unless explicitly approved by the owner.
+If A1/A2/A3 are **all** FRAGILE or uneconomic on futures, that is a valid "no edge" result —
+stop, do not tune-to-fit. Any venue reconsideration after that is a separate, evidence-gated,
+owner-only decision, and **crypto is NOT the default successor**: crypto-SMC carries its own
+FRAGILE verdict and the Bybit pivot was rejected on corrected facts
+(`research_archive/rejected_bybit_pivot_v5/`). Crypto is a closed door, not plan B.
 
 ---
 
@@ -86,7 +89,7 @@ on the primary universe unless explicitly approved by the owner.
 
 | Item | Why frozen |
 |---|---|
-| BTC/ETH expansion | Rule 2 — no BTC/ETH work before first GC/6E ROBUST verdict |
+| Crypto / Bybit (BTC-ETH) | **CLOSED door** — rejected on corrected facts, not a gated hedge (`research_archive/rejected_bybit_pivot_v5/`) |
 | New SMC filters beyond A1 spec | Rule 1 — each filter = new alpha ID, must gate A1 first |
 | Master-trader selector enhancements | Rule 1 — A2 is READ; no tuning before gate race |
 | A3 ensemble build | Requires A1 + A2 both gated |
@@ -123,6 +126,14 @@ on the primary universe unless explicitly approved by the owner.
 │  5. Record verdict → owner reviews                      │
 └─────────────────────────────────────────────────────────┘
 ```
+
+> **A1 selectivity guard (read before running A1).** A0_MVP fired 3,533 signals at an 11%
+> rate (1 in 9 bars); the G3 cooldown blocked 99%, leaving n=38. That low count is the full
+> WHERE filter **doing its job** — A1 (OB + FVG + displacement, on 1h) is *meant* to be
+> selective. So: if A1's n falls below the floor, **the fix is more data — full multi-year
+> GC + MGC + 6E — never a looser filter.** Loosening to manufacture trades re-introduces the
+> over-firing A0_MVP failure mode and inflates the DSR trial count. Selectivity is the signal,
+> not the bug.
 
 ---
 
