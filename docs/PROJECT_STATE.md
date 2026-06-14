@@ -65,6 +65,11 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
   New: DatabentoLoader + IBHistoricalLoader (identical .load() API), check_ohlcv (shared),
   CME expiry/roll calendar, source-agnostic get_loader() factory, 99 new data tests;
   17 skips = parquet roundtrip + IB connection tests (need pyarrow/ib_insync/TWS)
+- 2026-06-14: ROADMAP.md integrates owner's 12-phase verification ladder (PHASE 0–11)
+  mapped onto build phases A–E + deployment states, with a Reconciliation section keeping
+  locked rules authoritative (GC/MGC/6E only — no crypto; locked gate not PF>1.3/500-trades;
+  2%/15% risk not 3%/10%; SMC = WHERE-filter only; owner-only gate-gated live). Also made the
+  C3 timezone integrity test environment-portable (fixed UTC offset, no system tzdata). 498 green.
 
 ## Known Gaps
 
