@@ -53,7 +53,10 @@ def _build_alpha(alpha_name: str, master_data: Optional[str] = None) -> AlphaMod
 
     if alpha_name == "a1":
         from ag.alpha.a1_smc_momentum.a1_alpha import A1SmcMomentum
-        return A1SmcMomentum()
+        from ag.alpha.a1_smc_momentum.pipeline import PipelineConfig
+        return A1SmcMomentum(config=PipelineConfig(
+            sweep=True, choch=True, ob=True, fvg=True, displacement=True
+        ))
 
     if alpha_name == "a2":
         from ag.alpha.a2_master_trader.a2 import A2MasterTrader

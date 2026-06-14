@@ -1,0 +1,3 @@
+{"trial_id": "6ffd279c", "alpha_id": "A1", "description": "base: full WHERE filter \u2014 sweep+choch+OB+FVG+displacement, swing_lookback=5, atr_window=14, stop=0.5%, target=1.0%", "params": {}, "timestamp_utc": "", "note": ""}
+{"trial_id": "3276323a", "alpha_id": "A0_MVP", "description": "base: sweep+choch only, swing_lookback=5, atr_window=14, stop=0.5%, target=1.0%", "params": {}, "timestamp_utc": "", "note": ""}
+{"trial_id": "18ba4935", "alpha_id": "A1", "description": "full WHERE: sweep+choch+OB+FVG+displacement, swing_lookback=5, atr_window=14, stop=0.5%, target=1.0%", "params": {}, "timestamp_utc": "", "note": ""}
