@@ -5,6 +5,11 @@
   Bearish FVG: candle[i].high < candle[i-2].low   (gap below candle i-2)
 
 Gap must be >= min_size_atr * ATR(14) to avoid noise.
+
+# ⚠️  FRAGILE — SMC as a standalone signal has no edge on GC H1 (see
+# research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md).
+# This module is a CONTEXT FILTER only: it answers WHERE (imbalance zones),
+# never WHEN (entry timing).  Entry decisions live in AlphaModule.propose().
 """
 from __future__ import annotations
 

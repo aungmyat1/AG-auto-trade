@@ -5,6 +5,13 @@ CHOCH: first BOS in the OPPOSITE direction — potential trend reversal signal.
 
 Swing high/low definition: bar i is a swing high if highs[i] >= max of the
 n bars before and after it (n = swing_lookback).  Mirror for lows.
+
+# ⚠️  FRAGILE — SMC as a standalone signal has no edge on GC H1 (see
+# research_archive/legacy_smc_failures/SMC_H1_FRAGILE.md).
+# This module is a CONTEXT FILTER only: it answers WHERE (structure breaks),
+# never WHEN (entry timing).  Entry decisions live in AlphaModule.propose().
+# NOTE: ChoCH/BOS is used as a WHEN trigger only for A0_MVP (expected FRAGILE).
+# For A1, it is a WHERE context signal combined with ≥2-of-3 WHEN filters.
 """
 from __future__ import annotations
 

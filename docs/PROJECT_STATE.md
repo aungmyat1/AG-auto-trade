@@ -89,6 +89,11 @@ Last updated: 2026-06-13 (Dispatch 6 — Phase B data layer: Databento + IB)
 | Databento API key not set | Add `DATABENTO_API_KEY` to `.env` to enable DB downloads |
 | CPCV/WF train-side purge scores only OOS | By design (no per-fold refit on static series) |
 | Lock-before-look loader missing | Gate thresholds hardcoded in gate.py; loader is the A4 test |
+| **[AUDIT S1]** FRAGILE header missing from SMC detector files | Add to `detectors/{liquidity,order_block,fvg,bos_choch}.py` + `pipeline.py` — P1 |
+| **[AUDIT S9]** `_active_obs` list unbounded | Cap at 50 in `a1_alpha.py:77` — P2 |
+| **[AUDIT S8]** No `TRIALS.md` parameter ledger | Create `ag/alpha/a1_smc_momentum/TRIALS.md` — P3 |
+| **[AUDIT S6]** No look-ahead regression tests for SMC detectors | Add to `tests/unit/smc/` — P4 |
+| **[AUDIT R7-R9]** No unit tests for cpcv/walk_forward/monte_carlo/a1_alpha.propose()/historical | Deferred until post-verdict |
 
 ## Next Goal
 
