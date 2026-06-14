@@ -1,5 +1,5 @@
 # AG Auto-Trade — Live Roadmap
-> Last synced: 2026-06-14 · Source of truth: `docs/PROJECT_STATE.md`
+> Last synced: 2026-06-14 (A1 backtest complete — verdict pending) · Source of truth: `docs/PROJECT_STATE.md`
 
 ---
 
@@ -14,7 +14,7 @@
  │  │  IB (MVP)    │    │ propose()│    │ validate │    │  IB/Naut │       │
  │  │  Databento ↑ │    │          │    │          │    │          │       │
  │  └──────────────┘    └──────────┘    └──────────┘    └──────────┘       │
- │     🟡 B  ←  first download pending    ✅ done          🔒 D/E           │
+ │     ✅ done (GC+6E 1h+1m cached)        ✅ done          🔒 D/E           │
  │                                                                           │
  │  ◀────────── GATE required before execution layer may be built ─────────▶│
  └──────────────────────────────────────────────────────────────────────────┘
@@ -26,8 +26,8 @@
 
 ```
 Phase A  Platform hardening     ████████████████████  100%  ✅ DONE  (audit 2026-06-14: PASS)
-Phase B  Data layer             ████████████████████  100%  ✅ DONE (GC 1m cached 2022-2024)
-Phase C  Alpha gate race        █████░░░░░░░░░░░░░░░   25%  🟡 A0_MVP FRAGILE · A1 NEXT
+Phase B  Data layer             ████████████████████  100%  ✅ DONE (GC+6E 1h+1m 2020-2024)
+Phase C  Alpha gate race        ████████░░░░░░░░░░░░   40%  🟡 A0+A1 ran · A1 verdict pending
 Phase D  Execution (IB/Naut)    ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 Phase E  Live trading           ░░░░░░░░░░░░░░░░░░░░    0%  🔒 LOCKED
 ```
@@ -82,7 +82,7 @@ FRAGILE verdict and the Bybit pivot was rejected on corrected facts
 4. ✅ Run A0_MVP          DONE — 38 trades, WR 47.4%, mean R −0.003
 5. ✅ Run gate            SKIPPED — 38 < 50 (below READ floor); gate cannot run on n<50
 6. ✅ Record verdict      DONE — FRAGILE, research_archive/a0_mvp/VERDICT.md
-7. ⬅️ OWNER REVIEW        Review A0_MVP result → FREEZE fully lifts → A1 begins  ← YOU ARE HERE
+7. ✅ A1 BEGAN           A1 full WHERE filter ran (GC 5yr 33 trades, 6E artifact)
 ```
 
 **Still frozen until A1 ROBUST verdict (Rule 1 — no new systems before first ROBUST verdict):**
@@ -101,39 +101,34 @@ FRAGILE verdict and the Bybit pivot was rejected on corrected facts
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  ✅  FREEZE LIFTED — A0_MVP FRAGILE (2026-06-14)        │
+│  ⬅️  OWNER DECISION REQUIRED — A1 verdict               │
 │                                                         │
-│  A0_MVP result:                                         │
-│    38 approved trades on GC 1m 2022-2024                │
-│    Win rate 47.4%  |  Mean R −0.003                     │
-│    Below READ floor (n<50) — gate skipped               │
-│    Verdict: FRAGILE (expected — pipeline smoke test)     │
-│    Archive: research_archive/a0_mvp/VERDICT.md          │
+│  A1 backtest results (2026-06-14):                      │
 │                                                         │
-│  All 4 audit items confirmed closed (S1/S6/S8/S9).     │
-│  557/557 tests green.                                   │
+│  GC 1h 2020-2024 (5yr):                                │
+│    50 signals → 33 approved                             │
+│    Win rate 66.7%  |  Mean R +0.059                     │
+│    Below READ floor (n<50) — gate cannot run            │
 │                                                         │
-│  ⬅️  OWNER: review A0_MVP result, then give go-ahead    │
+│  6E 1h 2020-2024 (5yr):                                 │
+│    282 signals → 3 approved  ⚠️ ARTIFACT                │
+│    Stateful risk-engine locked from 2020 COVID           │
+│    volatility — not a valid signal count                 │
 │                                                         │
-│  After review — A1 sequence:                            │
-│  1. Resample 1m → 1h (python3, ~5s)                    │
-│  2. Log A1 trial in trial_log.py                        │
-│  3. scripts/run_alpha_backtest.py --alpha a1 \          │
-│         --data /home/aungp/data/cache/GC_1h.parquet \  │
-│         --instrument GC --out results/a1_trades.csv     │
-│  4. scripts/run_gate.py results/a1_trades.csv \         │
-│         --instrument GC --cost-preset gc --n-trials <N> │
-│  5. Record verdict → owner reviews                      │
+│  Trials logged: A0_MVP×1  A1×2  (trial_log.jsonl)      │
+│  603/603 tests green. LF-1 fixed. Data cached.          │
+│                                                         │
+│  HONEST READ: A1 fires ~10 signals/year on GC H1.      │
+│  Even on 5 years, n<50. Edge too rare to gate on        │
+│  available CME H1 data — not a quality failure          │
+│  (GC WR 66.7% is promising) but a frequency one.        │
+│                                                         │
+│  Owner options:                                         │
+│  A) Archive A1 FRAGILE → A2 carries the race           │
+│  B) Trial 3: test displacement-removal as a             │
+│     'does it add value?' hypothesis (not a rescue)      │
 └─────────────────────────────────────────────────────────┘
 ```
-
-> **A1 selectivity guard (read before running A1).** A0_MVP fired 3,533 signals at an 11%
-> rate (1 in 9 bars); the G3 cooldown blocked 99%, leaving n=38. That low count is the full
-> WHERE filter **doing its job** — A1 (OB + FVG + displacement, on 1h) is *meant* to be
-> selective. So: if A1's n falls below the floor, **the fix is more data — full multi-year
-> GC + MGC + 6E — never a looser filter.** Loosening to manufacture trades re-introduces the
-> over-firing A0_MVP failure mode and inflates the DSR trial count. Selectivity is the signal,
-> not the bug.
 
 ---
 
@@ -150,35 +145,29 @@ FRAGILE verdict and the Bybit pivot was rejected on corrected facts
 | A1SmcMomentum wrapper + audit tracker | ✅ | pipeline + backtest tests |
 | Trial registry (honest --n-trials) | ✅ | `ag/validation/trial_log.py` |
 | Backtest harness | ✅ | `scripts/run_alpha_backtest.py` |
-| Test suite: unit · integration · backtest · e2e | ✅ | **540 / 540 green** (17 skip pending deps) |
+| Test suite: unit · integration · backtest · e2e | ✅ | **603 / 603 green** (replay suite added PR #13) |
 | CI (GitHub Actions) + branch protection | ✅ | PR required + test check |
 | Pipeline end-to-end verified (synthetic) | ✅ | Preflight 2026-06-14; 2 bugs fixed |
 | Repo audit | ✅ | `docs/audits/REPO_AUDIT_2026-06-14.md` — PASS (4 WARNs open) |
 
 ---
 
-## Phase B — Data Layer 🟡 DATABENTO KEY NEEDED
-
-> **Loaders built + pipeline verified end-to-end. Single remaining blocker: Databento API key.**
+## Phase B — Data Layer ✅ DONE
 
 | Step | Status | Notes |
 |------|--------|-------|
 | B0 — IB loader (`IBHistoricalLoader`) | ✅ | Offline-first, CONTFUT, chunked pacing |
-| B0 — Databento loader (`DatabentoLoader`) | ✅ | Offline-first, lazy import, parquet cache |
-| B0 — Source-agnostic factory (`get_loader`) | ✅ | Identical `.load()` API on both — one flag to switch |
+| B0 — Databento loader (`DatabentoLoader`) | ✅ | `stype_in=continuous` fix PR #18 |
+| B0 — Source-agnostic factory (`get_loader`) | ✅ | Identical `.load()` API on both |
 | B0 — CME roll calendar (`roll.py`) | ✅ | `get_front_month()` for GC/MGC/6E |
 | B0 — Integrity checker (`check_ohlcv`) | ✅ | C1–C8, shared across both loaders |
-| B0 — Synthetic fixtures + 99 data tests | ✅ | 82 pass · 17 skip (pyarrow/ib_insync absent) |
-| B0 — Pipeline e2e verified (preflight) | ✅ | backtest → gate runs on synthetic; 2 bugs fixed |
-| B1 — IB plumbing download | 🟡 OPTIONAL | READ-tier only (1 yr, 1 regime); not gate-grade |
-| B2 — Integrity check on downloaded data | ⬜ | Auto after download |
-| **B3 — Databento 1m bars (gate-grade)** | 🔴 **BLOCKED** | Needs `DATABENTO_API_KEY` → **only remaining blocker** |
-
-**Install to unblock the 17 skipped tests:**
-```
-pip install -e ".[dev]"      # pyarrow → parquet roundtrip tests
-pip install -e ".[phase1]"   # ib_insync + databento → download tests
-```
+| B0 — Synthetic fixtures + data tests | ✅ | All green (pyarrow + ib_insync installed) |
+| B0 — Pipeline e2e verified (preflight) | ✅ | backtest → gate runs end-to-end |
+| B1 — IB plumbing download | 🟡 OPTIONAL | READ-tier only; not gate-grade |
+| B2 — Integrity check on downloaded data | ⬜ | Deferred — run before production use |
+| B3 — GC 1m 2022-2024 | ✅ | 31,284 bars · `/home/aungp/data/cache/GC_1m.parquet` |
+| B3 — GC 1h 2020-2024 | ✅ | 10,451 bars · `/home/aungp/data/cache/GC_1h.parquet` |
+| B3 — 6E 1h 2020-2024 | ✅ | 24,441 bars · `/home/aungp/data/cache/6E_1h.parquet` |
 
 ---
 
@@ -203,9 +192,11 @@ Gate thresholds (locked, immutable):
              Gate skipped. Archived: research_archive/a0_mvp/VERDICT.md
              Purpose fulfilled: pipeline confirmed end-to-end.
 
- A1          ✅       ✅       ⬜       PENDING  ← NEXT
-             (full SMC filter: sweep+choch+OB+FVG+displacement)
-             Run on GC 1h — owner review of A0_MVP result required first
+ A1          ✅       ✅       ⬜       VERDICT PENDING  ← OWNER DECISION
+             GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 (below READ floor n<50)
+             6E 1h 5yr: 3 approved (backtest artifact — stateful risk-engine from 2020)
+             Trials: 2 logged. Signal rate ~10/yr on GC H1 — too rare to gate as-is.
+             Options: A) archive FRAGILE → A2 carries  B) trial 3 displacement-removal
 
  A2          ✅       ✅       ✅       READ  ⚠️
              n=325 OOS · 10/11 PASS · DSR FAIL (z=−25.32)
@@ -216,26 +207,25 @@ Gate thresholds (locked, immutable):
              (ensemble: 0.4·A1 + 0.3·regime + 0.3·A2 > 0.75)
 ```
 
-### Next actions in Phase C (after Databento data lands)
+### Phase C progress log
 
 ```
- DISCIPLINE: every parameter tune must be logged in trial_log.py BEFORE the run.
-             --n-trials = row count in trial_log.py at gate time. No exceptions.
-             Unlogged experiment = self-deception (CLAUDE.md §7).
+ DONE  A0_MVP (2026-06-14) — FRAGILE · 38 trades GC 1m 2022-24 · below floor
+       Archive: research_archive/a0_mvp/VERDICT.md · 1 trial logged
 
- 1. A0_MVP backtest  → scripts/run_alpha_backtest.py --alpha a0_mvp --data <gc_1m.parquet>
-    → A0_MVP is a pipeline smoke test; sweep+choch = archived FRAGILE; expect FRAGILE
-    → If FRAGILE: archive to research_archive/a0_mvp/ — do NOT tune the signal to "fix" it
-    → If signal rate < 1/20 bars: log tune attempt in trial_log.py, lower swing_lookback
-    → Each lookback variant = +1 trial in --n-trials
+ DONE  A1 backtest (2026-06-14) — verdict PENDING OWNER DECISION
+       GC 1h 5yr: 33 approved · WR 66.7% · mean R +0.059 (below READ floor)
+       6E 1h 5yr: 3 approved (risk-engine artifact, not valid)
+       Signal rate too rare (~10/yr GC H1) — 2 trials logged
+       Next: owner decides A) archive FRAGILE  B) trial 3 displacement-removal
 
- 2. A0_MVP gate      → scripts/run_gate.py trades.csv --instrument GC \
-                         --n-trials <count from trial_log.py>
-    → IB 1h data is READ-tier only (1 year, 1 regime) — not valid for ROBUST verdict
-    → Databento multi-year 1m data required for CPCV/WF to be meaningful
+ NEXT  A2 formal gate — if A1 archived; A2 (READ, n=325) carries the race
+       Requires: owner decision on A1 first
 
- 3. A1 gate (first real edge test — WHERE filter + WHEN trigger, not ChoCH→entry)
- 4. A3 ensemble gate (last — needs A1 + A2 both gated)
+ LAST  A3 ensemble gate — needs A1 + A2 both gated
+
+ DISCIPLINE: every parameter tune logged in trial_log.jsonl BEFORE the run.
+             --n-trials = line count per alpha in trial_log.jsonl at gate time.
 ```
 
 ---
@@ -279,26 +269,28 @@ Gate thresholds (locked, immutable):
 
 ## Open Gaps
 
-| Gap | Priority | Source |
+| Gap | Priority | Status |
 |-----|----------|--------|
-| **`DATABENTO_API_KEY` not set** | 🔴 Critical — only blocker to first verdict | B3 |
-| FRAGILE header missing from SMC detector files | 🟡 High — fix before gate (audit S1 FAIL) | Audit 2026-06-14 |
-| `_active_obs` unbounded growth in `a1_alpha.py` | 🟡 High — memory risk on real data (audit S9) | Audit 2026-06-14 |
-| `TRIALS.md` parameter ledger missing | 🟡 Medium — required by SMC skill (audit S8) | Audit 2026-06-14 |
-| No look-ahead regression tests per SMC detector | 🟡 Medium — audit S6 | Audit 2026-06-14 |
-| pyarrow not installed | Low — `pip install -e ".[dev]"` → 17 tests green | B0 |
-| ib_insync not installed | Low — `pip install -e ".[phase1]"` | B1 |
-| No unit tests for cpcv/walk_forward/monte_carlo | Low — deferred post-verdict | Audit R7 |
-| CPCV/WF train-side purge scores only OOS | Low — by design | - |
+| ~~`DATABENTO_API_KEY` not set~~ | ~~🔴 Critical~~ | ✅ CLOSED 2026-06-14 — key set, loader fixed |
+| ~~FRAGILE header missing (S1)~~ | ~~🟡 High~~ | ✅ CLOSED — headers added, replay suite PR #13 |
+| ~~`_active_obs` unbounded (S9)~~ | ~~🟡 High~~ | ✅ CLOSED — capped at 50 in `a1_alpha.py` |
+| ~~`TRIALS.md` parameter ledger (S8)~~ | ~~🟡 Medium~~ | ✅ CLOSED — `trial_log.jsonl` + `ag/validation/trial_log.py` |
+| ~~No look-ahead regression tests (S6)~~ | ~~🟡 Medium~~ | ✅ CLOSED — replay suite added PR #13 (603 tests) |
+| ~~pyarrow not installed~~ | ~~Low~~ | ✅ CLOSED — installed |
+| ~~ib_insync not installed~~ | ~~Low~~ | ✅ CLOSED — installed |
+| No unit tests for cpcv/walk_forward/monte_carlo | Low | Open — deferred post-verdict |
+| 6E stateful risk-engine artifact in multi-year backtests | 🟡 Medium | Open — early crash locks engine for full run; needs reset-per-year approach before 6E can be gated |
 
 ---
 
 ## What "done" looks like
 
 ```
-  Phase B complete  →  GC 1m+1h data downloads, integrity checks pass, 540+17 all green
-  A0_MVP ROBUST     →  First real gate verdict. A1 filter-by-filter work begins.
-  A1 ROBUST         →  A3 ensemble becomes buildable.
-  A3 ROBUST         →  30-day dry-run starts. Execution layer build begins.
-  Dry-run pass      →  Owner enables live trading. Not before.
+  Phase B complete  ✅  GC+6E 1h+1m 2020-2024 cached, 603 tests green (2026-06-14)
+  A0_MVP            ✅  FRAGILE — pipeline confirmed, archived (2026-06-14)
+  A1 ROBUST         ⬜  First real gate verdict. Needs owner decision + possible trial 3.
+  A2 ROBUST         ⬜  If A1 FRAGILE, A2 carries the race (currently READ n=325).
+  A3 ROBUST         ⬜  Ensemble gate — needs A1 or A2 ROBUST first.
+  30-day dry-run    ⬜  Starts after first ROBUST verdict.
+  Live trading      ⬜  Owner manually enables — not before dry-run passes.
 ```
