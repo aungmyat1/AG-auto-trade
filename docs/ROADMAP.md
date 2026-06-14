@@ -68,6 +68,34 @@ on the primary universe unless explicitly approved by the owner.
 
 ---
 
+## 🧊 DEVELOPMENT FREEZE — active until first verdict is reviewed
+
+**The 7-step sequence to first verdict (clock starts when Databento key lands):**
+
+```
+1. Preflight audit        /audit-repo + /smc-review  (can run now — no key needed)
+2. Acquire Databento      Owner action — add DATABENTO_API_KEY to .env
+3. Download GC data       get_loader("databento").load("GC","1m","2022-01-01","2024-12-31")
+4. Run A0_MVP             scripts/run_alpha_backtest.py --alpha a0_mvp --data <file>
+5. Run gate               scripts/run_gate.py trades.csv --instrument GC --n-trials <N>
+6. Record verdict         FRAGILE → research_archive/a0_mvp/   READ/ROBUST → PROJECT_STATE.md
+7. FREEZE & REVIEW        Owner reviews the verdict before ANY further build.
+```
+
+**Do NOT start before step 7 is complete:**
+
+| Item | Why frozen |
+|---|---|
+| BTC/ETH expansion | Rule 2 — no BTC/ETH work before first GC/6E verdict |
+| New SMC filters | Rule 1 — A0_MVP must be gated first; each filter = new alpha ID |
+| Master-trader selector enhancements | Rule 1 — A2 is READ; no tuning before gate race |
+| Copy-trading optimizer | Rule 1 — no new systems before first verdict |
+| AI signal ranking | Rule 1 — validation before optimization (CLAUDE.md §7) |
+
+**The freeze is active now.** Step 2 (Databento key) is the only unblocked action.
+
+---
+
 ## ══════════════ YOU ARE HERE ══════════════
 
 ```
