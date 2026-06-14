@@ -50,6 +50,19 @@ These were in code but absent from any decision doc until now:
 | displacement `atr_mult` | detector default 1.8 | `displacement.py` |
 | stop / target | 0.5% / 1.0% | backtest harness |
 
+## §2b — IS/OOS split (locked before gate run)
+
+Chronological 60/40 split, identical for both instruments:
+
+```
+IS period:  2020-01-02 → 2022-12-30  (3 years)
+OOS period: 2023-01-02 → 2024-12-30  (2 years)
+IS_CUTOFF_DATE = 2022-12-30
+```
+
+CPCV, purged WF, and MC run on OOS only. IS bars may not be examined for verdict purposes
+after this line is committed.
+
 ## §3 — Trial-count floor (recomputed; show the arithmetic)
 
 ```

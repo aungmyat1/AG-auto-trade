@@ -241,6 +241,14 @@ rescue a FRAGILE verdict is BANNED.
   trial floor (§5 = 14), net-of-cost model (§4), and alpha design (§1) are **UNCHANGED**. A1 may now
   be gated against this spec on GC + MGC + 6E.
 
+- 2026-06-14: **§1 IS NOT BUILT.** Pre-gate code audit found that `A1SmcMomentum` with
+  `PipelineConfig(sweep, choch, ob, fvg, displacement)` does NOT satisfy §1. Missing:
+  WHEN trigger (MT1/MT2/MT3, ≥2-of-3), Z4 Fib, regime gate, ATR floor. FVG used instead
+  of Fib Z4. Five numeric params were not pre-committed. This §1 spec (WHERE+WHEN) remains
+  locked and untouched — it requires a fresh held-out window to be validly gated. The built
+  code is gated as **A1_WHERE_ONLY** under `A1_WHERE_ONLY_DECISION.md`. §9 verdict-reading
+  rule applies to both. Test pinning the drift: `tests/unit/test_a1_spec_conformance.py`.
+
 ---
 
 ## §9 — VERDICT-READING RULE (per-instrument; locked 2026-06-14, BEFORE the A1 run)
