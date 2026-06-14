@@ -151,7 +151,7 @@ on the primary universe unless explicitly approved by the owner.
 | A1SmcMomentum wrapper + audit tracker | ✅ | pipeline + backtest tests |
 | Trial registry (honest --n-trials) | ✅ | `ag/validation/trial_log.py` |
 | Backtest harness | ✅ | `scripts/run_alpha_backtest.py` |
-| Test suite: unit · integration · backtest · e2e | ✅ | **498 / 498 green** (17 skip pending deps) |
+| Test suite: unit · integration · backtest · e2e | ✅ | **540 / 540 green** (17 skip pending deps) |
 | CI (GitHub Actions) + branch protection | ✅ | PR required + test check |
 | Pipeline end-to-end verified (synthetic) | ✅ | Preflight 2026-06-14; 2 bugs fixed |
 | Repo audit | ✅ | `docs/audits/REPO_AUDIT_2026-06-14.md` — PASS (4 WARNs open) |
@@ -299,7 +299,7 @@ Gate thresholds (locked, immutable):
 ## What "done" looks like
 
 ```
-  Phase B complete  →  GC 1m+1h data downloads, integrity checks pass, 498+17 all green
+  Phase B complete  →  GC 1m+1h data downloads, integrity checks pass, 540+17 all green
   A0_MVP ROBUST     →  First real gate verdict. A1 filter-by-filter work begins.
   A1 ROBUST         →  A3 ensemble becomes buildable.
   A3 ROBUST         →  30-day dry-run starts. Execution layer build begins.
