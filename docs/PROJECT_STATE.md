@@ -100,6 +100,15 @@ v4 build order position:
 - 2026-06-14 (A0_MVP run): 38 approved trades, WR 47.4%, mean R −0.003
   FRAGILE (below READ floor n<50, gate skipped). Pipeline confirmed end-to-end.
   All 4 audit items confirmed closed (S1/S6/S8/S9). Archived: `research_archive/a0_mvp/VERDICT.md`
+- 2026-06-14 (gate-readiness, Cloud MAIN): `A1_VERDICT_RULE.md` locked; `CostModel.for_mgc()`
+  + `--cost-preset mgc` wired; dispatch committed.
+- 2026-06-14 (**spec↔code audit — Option C reconciliation**): the alpha run as "A1" is
+  **A1_WHERE_ONLY** (sweep+ChoCH+OB+FVG+displacement; **no WHEN trigger**, no Fib — confirmed:
+  MT1/2/3 appear only in the a1_alpha docstring, never in `propose()`; `_build_alpha("a1")` =
+  WHERE-only `PipelineConfig`). GC 5yr result = **n=33 < 50 → UNSCOREABLE** (WR 66.7%). Locked
+  `A1_WHERE_ONLY_DECISION.md` (orphan params registered; trial floor 14+6=20). Full-A1
+  (WHERE+WHEN) = **SPEC LOCKED, NOT BUILT** — §1 untouched; must not be wired+gated on the
+  seen 2020-24 window. CI conformance test pins the drift (`test_a1_spec_conformance.py`).
 
 ## Known Gaps
 
@@ -134,10 +143,15 @@ v4 build order position:
 
 ## Next Goal
 
-**FREEZE LIFTED. Next: A1 gate race on GC 1h data.**
+**OWNER DECISION on A1_WHERE_ONLY (UNSCOREABLE), then proceed per Rule 2.**
 
-A0_MVP verdict recorded (FRAGILE, pipeline smoke test complete). All audit items closed.
-Owner review of A0_MVP result is the gate before A1 begins.
+A1_WHERE_ONLY ran: GC 5yr n=33<50 → UNSCOREABLE (WR 66.7% promising, but edge too rare to
+gate on CME H1 — a frequency limit). Two honest options (no filter-loosening either way):
+  - **(A) Archive A1_WHERE_ONLY → promote A2** (TESTED/READ) per Rule 2 — the disciplined path.
+  - **(B) Build full-A1 (add the WHEN trigger)** as a genuinely new alpha and gate it on a
+    FRESH, unseen window (never re-gate the seen 2020-24 data). This is real new work, gated by
+    the freeze (A1 has no ROBUST verdict).
+Honest prior: a third FRAGILE is the likely outcome and is a valid finding, not a failure.
 
   After owner review, the A1 sequence (~1–2 hours compute):
 

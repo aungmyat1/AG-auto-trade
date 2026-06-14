@@ -1,5 +1,15 @@
 # AG Auto-Trade — Live Roadmap
-> Last synced: 2026-06-14 (A1 backtest complete — verdict pending) · Source of truth: `docs/PROJECT_STATE.md`
+> Last synced: 2026-06-14 (spec↔code audit — "A1" run was WHERE-only) · Source of truth: `docs/PROJECT_STATE.md`
+
+> **OPEN QUESTION (current):** Does **WHERE-only SMC** have an edge on GC/6E?
+> (prior: crypto-SMC FRAGILE, A0_MVP FRAGILE — and the GC 5yr WHERE-only run is UNSCOREABLE at n=33<50.)
+>
+> **Spec-drift reconciliation (2026-06-14):** the alpha run as "A1" is **A1_WHERE_ONLY**
+> (sweep+ChoCH+OB+FVG+displacement, no WHEN trigger, no Fib) — registered in
+> `A1_WHERE_ONLY_DECISION.md`. The locked **full-A1** (`A1_SMC_MOMENTUM_DECISION.md` §1,
+> ≥3-of-4 WHERE + ≥2-of-3 WHEN) is **SPEC LOCKED, NOT BUILT** — and must NOT be wired then
+> gated on the already-seen 2020–2024 window (would launder seen data). A CI conformance
+> test (`test_a1_spec_conformance.py`) now pins this so the drift cannot recur silently.
 
 ---
 

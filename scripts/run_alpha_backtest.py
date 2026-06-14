@@ -181,7 +181,7 @@ def main() -> None:
     parser.add_argument("--alpha", required=True, choices=["a0_mvp", "a1", "a2"])
     parser.add_argument("--data", help="Path to OHLCV parquet file")
     parser.add_argument("--instrument", default="GC", choices=["GC", "MGC", "6E"])
-    parser.add_argument("--cost-preset", default="gc", choices=["gc", "6e"])
+    parser.add_argument("--cost-preset", default="gc", choices=["gc", "mgc", "6e"])
     parser.add_argument("--master-data", help="Path to master trader CSV (a2 only)")
     parser.add_argument("--out", default="results/trades.csv")
     parser.add_argument("--lookback", type=int, default=50)
@@ -207,7 +207,9 @@ def main() -> None:
     alpha = _build_alpha(args.alpha, args.master_data)
     risk_engine = RiskEngine(RiskConfig())
     # cost_model applied by run_gate.py on the CSV output (net-of-cost scoring happens there)
-    _cost_model = CostModel.for_gc() if args.cost_preset == "gc" else CostModel.for_6e()
+    _cost_model = {
+        "gc": CostModel.for_gc, "mgc": CostModel.for_mgc, "6e": CostModel.for_6e,
+    }[args.cost_preset]()
 
     print(f"Running backtest: alpha={alpha.alpha_id}, instrument={args.instrument}, "
           f"cost_preset={args.cost_preset}")

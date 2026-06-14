@@ -26,6 +26,17 @@ class TestCostApplication:
         cm = CostModel.for_gc()
         assert cm.total_r == pytest.approx(0.18)
 
+    def test_factory_mgc(self):
+        cm = CostModel.for_mgc()
+        assert cm.total_r == pytest.approx(0.23)
+
+    def test_mgc_costlier_than_gc(self):
+        # Micro commission is not 1/10 → higher relative drag than GC.
+        assert CostModel.for_mgc().total_r > CostModel.for_gc().total_r
+        # spread/slippage identical (same underlying); only commission differs.
+        assert CostModel.for_mgc().spread_r == CostModel.for_gc().spread_r
+        assert CostModel.for_mgc().commission_r > CostModel.for_gc().commission_r
+
     def test_factory_6e(self):
         cm = CostModel.for_6e()
         assert cm.total_r == pytest.approx(0.12)
