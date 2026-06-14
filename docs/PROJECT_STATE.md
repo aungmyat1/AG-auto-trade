@@ -118,9 +118,9 @@ v4 build order position:
 | ~~**[AUDIT S6]** No look-ahead regression tests for SMC detectors~~ | ✅ Closed 2026-06-14 (PR #13) — `tests/replay/` future-poisoning + repaint suite, all 5 detectors |
 | ~~**LF-1** LiquidityDetector future-cluster look-ahead~~ | ✅ Closed 2026-06-14 (PR #13) — past-only clustering; `future_leak_free` green; /smc-review PASS |
 | **`DATABENTO_API_KEY` not set** | 🔴 ONLY BLOCKER — `echo "DATABENTO_API_KEY=<key>" >> .env` |
-| **[AUDIT S1]** FRAGILE header missing from SMC detector files | Fix before gate run — `detectors/{order_block,fvg,bos_choch}.py` + `pipeline.py` (liquidity done) |
-| **[AUDIT S9]** `_active_obs` list unbounded | Fix before gate run — cap at 50 in `a1_alpha.py:77` |
-| **[AUDIT S8]** No `TRIALS.md` parameter ledger | Fix before gate run — create `ag/alpha/a1_smc_momentum/TRIALS.md` |
+| ~~**[AUDIT S1]** FRAGILE header missing from SMC detector files~~ | ✅ Closed 2026-06-14 (PR #13) — displacement header added; OB/FVG/BOS-ChoCH/liquidity/pipeline already had it |
+| ~~**[AUDIT S9]** `_active_obs` list unbounded~~ | ✅ Already closed — capped at 50 (`a1_alpha.py:87-88`) |
+| ~~**[AUDIT S8]** No `TRIALS.md` parameter ledger~~ | ✅ Already closed — `ag/alpha/a1_smc_momentum/TRIALS.md` exists |
 | pyarrow not installed | Low — `pip install -e ".[dev]"` → 17 tests green |
 | ib_insync not installed | Low — `pip install -e ".[phase1]"` |
 | No unit tests for cpcv/walk_forward/monte_carlo | Deferred post-verdict (Audit R7-R9) |
