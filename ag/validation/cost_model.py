@@ -62,8 +62,23 @@ class CostModel:
 
     @classmethod
     def for_gc(cls) -> "CostModel":
-        """GC/MGC (Gold futures) — slightly wider spread than FX."""
+        """GC (Gold futures, 100 oz) — slightly wider spread than FX."""
         return cls(spread_r=0.07, commission_r=0.05, slippage_r=0.06)
+
+    @classmethod
+    def for_mgc(cls) -> "CostModel":
+        """MGC (Micro Gold futures, 10 oz = 1/10 GC).
+
+        Spread and slippage in R are identical to GC — same underlying, same tick
+        ($0.10/oz), so spread_ticks / stop_ticks is unchanged by contract size.
+        Commission, however, is a fixed $/contract that does NOT shrink to 1/10 for
+        micros (typical micro round-trip ≈ $1.0–1.2 vs ≈ $5 on GC, on a 10×-smaller
+        notional). Net effect: ~2× the relative commission drag of GC.
+
+        Conservative estimate; refine with the actual broker schedule on the WORKER.
+        commission_r = 0.10 assumes ~$1.0 round-trip over a ~10-tick ($10) MGC stop.
+        """
+        return cls(spread_r=0.07, commission_r=0.10, slippage_r=0.06)
 
     @classmethod
     def for_6e(cls) -> "CostModel":

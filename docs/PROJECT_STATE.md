@@ -100,6 +100,11 @@ v4 build order position:
 - 2026-06-14 (A0_MVP run): 38 approved trades, WR 47.4%, mean R −0.003
   FRAGILE (below READ floor n<50, gate skipped). Pipeline confirmed end-to-end.
   All 4 audit items confirmed closed (S1/S6/S8/S9). Archived: `research_archive/a0_mvp/VERDICT.md`
+- 2026-06-14 (A1 gate-readiness, Cloud MAIN): **A1 itself is still NOT TESTED — never run.**
+  Shipped the preconditions for the VPS 5-year run: `A1_VERDICT_RULE.md` locked (n-bands +
+  per-instrument + trial honesty); `CostModel.for_mgc()` added (+ `--cost-preset mgc` wired into
+  both run scripts) so MGC is net-of-cost-runnable; dispatch committed
+  (`docs/dispatch/A1_5YR_GATE_DISPATCH.md`). Awaiting VPS GC+MGC+6E verdict.
 
 ## Known Gaps
 
@@ -134,10 +139,13 @@ v4 build order position:
 
 ## Next Goal
 
-**FREEZE LIFTED. Next: A1 gate race on GC 1h data.**
+**A1 gate-ready. Next: VPS runs the 5-year GC+MGC+6E gate (dispatch committed).**
 
-A0_MVP verdict recorded (FRAGILE, pipeline smoke test complete). All audit items closed.
-Owner review of A0_MVP result is the gate before A1 begins.
+A1 is NOT TESTED (no run yet). Cloud MAIN has shipped all preconditions: `A1_VERDICT_RULE.md`
+locked, MGC cost preset + CLI wired, dispatch at `docs/dispatch/A1_5YR_GATE_DISPATCH.md`.
+The VPS WORKER (key-holder) runs the three instruments independently, reads each against
+`A1_VERDICT_RULE.md`, and reports all three in `docs/validation/A1_GATE_RESULT.md`. Cloud MAIN
+then records the verdicts. If no instrument clears n≥200 → archive A1, promote A2 (Rule 2).
 
   After owner review, the A1 sequence (~1–2 hours compute):
 

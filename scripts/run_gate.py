@@ -35,7 +35,7 @@ def main() -> None:
     parser.add_argument("--n-trials", type=int, default=1,
                         help="Number of parameter combos tried (for DSR inflation)")
     parser.add_argument("--cost-preset", default="default",
-                        choices=["default", "gc", "6e", "zero"],
+                        choices=["default", "gc", "mgc", "6e", "zero"],
                         help="Cost model preset")
     args = parser.parse_args()
 
@@ -51,6 +51,7 @@ def main() -> None:
     cost = {
         "default": CostModel(),
         "gc": CostModel.for_gc(),
+        "mgc": CostModel.for_mgc(),
         "6e": CostModel.for_6e(),
         "zero": CostModel(0, 0, 0),
     }[args.cost_preset]
